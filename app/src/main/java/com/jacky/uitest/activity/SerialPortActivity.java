@@ -82,6 +82,19 @@ public class SerialPortActivity extends AppCompatActivity implements AdapterView
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        unRegisterReceiver();
+        registerReceiver();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unRegisterReceiver();
+    }
+
     private void initView() {
         mUsbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
         mAdapter = new SerialPortAdapter();
@@ -275,7 +288,7 @@ public class SerialPortActivity extends AppCompatActivity implements AdapterView
         mUsbDeviceReceiver = null;
     }
 
-    private void findPenPort(){
+    private void findPenPort() {
 
     }
 
