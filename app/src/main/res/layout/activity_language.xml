@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#A4A0275B"
+    tools:context=".activity.LanguageActivity">
+
+
+    <Button
+        android:id="@+id/englishOcr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/english"
+        android:textColor="#A22929"
+        app:layout_constraintBottom_toTopOf="@+id/chineseOcr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/chineseOcr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/chinese"
+        android:textColor="#ED2BDB11"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/englishOcr"
+        app:layout_constraintStart_toStartOf="@+id/englishOcr"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/selectLanguage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#ffffff"
+        android:text="@string/select_language"
+        android:textColor="#3F51B5"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/englishOcr"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

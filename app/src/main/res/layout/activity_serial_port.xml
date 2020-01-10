@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.SerialPortActivity">
+
+    <TextView
+        android:id="@+id/hint_select_serial_port"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:text="@string/hint_serial_port_list"
+        android:textColor="#000000"
+        android:textSize="18sp" />
+
+    <ListView
+        android:id="@+id/serial_port_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button_layout"
+        android:layout_below="@+id/hint_select_serial_port"
+        android:layout_margin="10dp" />
+
+    <LinearLayout
+        android:id="@+id/button_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/pen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/pen_not_connect"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/other"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/other_not_connect"
+            android:textColor="#000000" />
+
+        <Button
+            android:id="@+id/refresh_device_list"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/refresh_device_list"
+            android:textColor="#F44336" />
+
+        <Button
+            android:id="@+id/ocr_start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/get_serial_port"
+            android:textColor="#673AB7" />
+
+    </LinearLayout>
+
+
+</RelativeLayout>
