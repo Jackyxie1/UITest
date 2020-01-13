@@ -28,5 +28,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1'
     implementation 'com.blankj:utilcodex:1.25.9'
     implementation 'com.github.mik3y:usb-serial-for-android:2.1.0'
+    implementation 'com.rmtheis:tess-two:9.1.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }
