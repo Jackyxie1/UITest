@@ -3,13 +3,15 @@
     package="com.jacky.uitest">
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.SerialPortActivity"></activity>
+        <activity android:name=".activity.CameraActivity"></activity>
+        <activity android:name=".activity.SerialPortActivity" />
         <activity android:name=".activity.LanguageActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

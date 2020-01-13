@@ -9,8 +9,8 @@
     <string name="hint_serial_port_list">请选择对应的串口</string>
     <string name="ocr_start">开启识别</string>
     <string name="refresh_device_list">刷新列表</string>
-    <string name="pen_connect">笔已连接</string>
-    <string name="pen_not_connect">笔未连接</string>
+    <string name="touch_connect">笔已连接</string>
+    <string name="touch_not_connect">笔未连接</string>
     <string name="other_connect">键已连接</string>
     <string name="other_not_connect">键未连接</string>
 </resources>

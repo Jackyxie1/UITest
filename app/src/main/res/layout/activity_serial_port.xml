@@ -32,11 +32,11 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/pen"
+            android:id="@+id/touch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/pen_not_connect"
+            android:text="@string/touch_not_connect"
             android:textColor="#000000" />
 
         <Button
@@ -60,7 +60,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/get_serial_port"
+            android:text="@string/ocr_start"
             android:textColor="#673AB7" />
 
     </LinearLayout>

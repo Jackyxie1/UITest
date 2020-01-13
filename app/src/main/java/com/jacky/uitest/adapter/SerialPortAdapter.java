@@ -40,7 +40,7 @@ public class SerialPortAdapter extends BaseAdapter {
     }
 
     @Override
-    public Object getItem(int position) {
+    public UsbSerialPort getItem(int position) {
         return usbSerialPortList.get(position);
     }
 
