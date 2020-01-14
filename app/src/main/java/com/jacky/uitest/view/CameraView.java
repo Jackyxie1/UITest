@@ -3,31 +3,43 @@ package com.jacky.uitest.view;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.jacky.uitest.App;
+import com.jacky.uitest.callback.RecognizeCallback;
+import com.jacky.uitest.utils.OcrUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private static final String TAG = "CameraView";
+    private static final String OCR_TAG = "OCR";
 
     private SurfaceHolder holder;
     private Camera mCamera;
-    private boolean isPreview;
+    private boolean isPreview, isOcrDoing;
     //preview size default
     private int imageHeight = 1080;
     private int imageWidth = 1920;
-    //preview frame default
-    private int frame = 30;
+
+    private MyImageView hintImage;
 
     public CameraView(Context context) {
         super(context);
@@ -50,13 +62,79 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
+    private long startTime, endTime;
+
     @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
+    public void onPreviewFrame(final byte[] data, final Camera camera) {
+        if (!isOcrDoing) {
+            isOcrDoing = true;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Log.d(OCR_TAG, "----------------start---------------");
+                        startTime = System.currentTimeMillis();
+                        Camera.Size size = camera.getParameters().getPreviewSize();
+                        int left = 0;
+                        int top = 0;
+                        int right = size.width;
+                        int bottom = size.height;
+                        final YuvImage image = new YuvImage(data, ImageFormat.NV21, size.width, size.height, null);
+                        if (null != image) {
+                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                            image.compressToJpeg(new Rect(left, top, right, bottom), getQuality(size.height), stream);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size());
+
+                            endTime = System.currentTimeMillis();
+                            Log.d(OCR_TAG, "frame data compress to bitmap cost: " + (endTime - startTime) + "ms");
+                            startTime = endTime;
+                            if (null == bitmap) {
+                                isOcrDoing = false;
+                                return;
+                            }
+                            if (null == hintImage && null != getTag()) {
+                                if (getTag() instanceof MyImageView) {
+                                    hintImage = (MyImageView) getTag();
+                                }
+                            }
+                            final Bitmap ocrBitmap = OcrUtil.getInstance().catchPhoneRect(OcrUtil.rotateToDegrees(bitmap, 90), hintImage);
+                            if (null == ocrBitmap) {
+                                isOcrDoing = false;
+                                return;
+                            }
+                            endTime = System.currentTimeMillis();
+                            Log.d(OCR_TAG, "deal with image data: " + (endTime - startTime) + "ms");
+                            startTime = endTime;
+                            //start ocr
+                            OcrUtil.getInstance().scanChinese(ocrBitmap, new RecognizeCallback() {
+                                @Override
+                                public void response(String result) {
+                                    endTime = System.currentTimeMillis();
+                                    Log.d(OCR_TAG, "ocr time cost: " + (endTime - startTime) + "ms");
+                                    startTime = endTime;
+                                    Log.d(OCR_TAG, "ocr result: " + result);
+                                    if (!TextUtils.isEmpty(getChinese(result.replace(" ", "")))) {
+                                        Log.d(OCR_TAG, "ocr result format: " + getChinese(result));
+                                    }
+                                    isOcrDoing = false;
+                                    Log.d(OCR_TAG, "-----------------end----------------");
+                                }
+                            });
+                        }
+                    } catch (Exception e) {
+                        Log.d(OCR_TAG, e.getMessage());
+                        isOcrDoing = false;
+                    }
+                }
+            }).start();
+        }
+
+
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        openCamera(0);
+        openCamera(1);
     }
 
     @Override
@@ -134,10 +212,17 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         param.setPreviewSize(imageWidth, imageHeight);
         param.setPictureSize(imageWidth, imageHeight);
 
+//        imageWidth = sizes.get(0).width;
+//        imageHeight = sizes.get(0).height;
+        param.setPreviewSize(imageWidth, imageHeight);
+        param.setPictureSize(imageWidth, imageHeight);
+
+        //preview frame default
+        int frame = 40;
         param.setPreviewFrameRate(frame);
 
         mCamera.setParameters(param);
-        mCamera.setDisplayOrientation(90);
+        mCamera.setDisplayOrientation(270);
         startPreview();
 
     }
@@ -159,7 +244,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         if (null != mCamera) {
             mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
-            mCamera = null;
         }
     }
 
@@ -230,5 +314,30 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             mCamera.release();
             mCamera = null;
         }
+    }
+
+    private String getChinese(String param) {
+        if (param.length() <= 0)
+            return "";
+        Pattern pattern = Pattern.compile("[^\\u4E00-\\u9FA5]");
+        Matcher matcher = pattern.matcher(param);
+        String realResult = matcher.replaceAll("");
+        return realResult;
+    }
+
+    private String getEnglish(String param) {
+        if (param.length() <= 0)
+            return "";
+        Pattern pattern = Pattern.compile("[a-zA-Z]+");
+        Matcher matcher = pattern.matcher(param);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            sb.append(matcher.group()).append(" ");
+        }
+        int len = sb.length();
+        if (len > 0) {
+            sb.deleteCharAt(len - 1);
+        }
+        return sb.toString();
     }
 }

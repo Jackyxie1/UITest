@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.jacky.uitest.R;
+import com.jacky.uitest.utils.PermissionUtil;
 
 public class LanguageActivity extends BaseActivity {
 
@@ -12,6 +13,7 @@ public class LanguageActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_language);
+        PermissionUtil.permissionAsk(this);
 
         findViewById(R.id.chineseOcr).setOnClickListener(new View.OnClickListener() {
             @Override

@@ -13,4 +13,7 @@
     <string name="touch_not_connect">笔未连接</string>
     <string name="other_connect">键已连接</string>
     <string name="other_not_connect">键未连接</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
