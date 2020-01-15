@@ -9,10 +9,8 @@
         android:id="@+id/camera_view_layout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
         android:layout_margin="10dp"
-        android:background="@drawable/cycle"
-        >
+        android:layout_weight="3">
 
         <com.jacky.uitest.view.CameraView
             android:id="@+id/camera_view"
