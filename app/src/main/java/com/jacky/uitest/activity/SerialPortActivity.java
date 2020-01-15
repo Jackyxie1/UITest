@@ -252,6 +252,10 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
                 refreshList();
                 break;
             case R.id.ocr_start:
+                if (!TextUtils.equals(touchConnect.getText(), getResources().getString(R.string.touch_connect))) {
+                    ToastUtils.showShort("请至少连接笔串口");
+                    return;
+                }
                 setPorts(touchPort, otherPort);
                 startCameraActivity();
                 break;
@@ -264,7 +268,6 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
             default:
                 break;
         }
-
 
     }
 

@@ -1,6 +1,7 @@
 package com.jacky.uitest.view;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,13 +9,20 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import androidx.annotation.NonNull;
+
 import com.jacky.uitest.App;
+import com.jacky.uitest.callback.OcrCallback;
 import com.jacky.uitest.callback.RecognizeCallback;
 import com.jacky.uitest.utils.OcrUtil;
 
@@ -32,37 +40,47 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private static final String TAG = "CameraView";
     private static final String OCR_TAG = "OCR";
 
+    String cn = "中文识别";
+    String eng = "英文识别";
+
+    private static final int MSG_OCR_TIME_COST = 100;
+    private static final int MSG_OCR_RESULT = 101;
+    private static final int MSG_OCR_TIME_RESPONSE = 102;
+
     private SurfaceHolder holder;
     private Camera mCamera;
-    private boolean isPreview, isOcrDoing;
+    private boolean isPreview, isOcrDoing, isOcrComplete;
     //preview size default
     private int imageHeight = 1080;
     private int imageWidth = 1920;
 
     private MyImageView hintImage;
+    Activity activity;
+    OcrCallback callback = null;
 
     public CameraView(Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public CameraView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
     public CameraView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
+        init(context);
     }
 
-    private void init() {
+    private void init(Context context) {
         holder = getHolder();
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        activity = (Activity) context;
     }
 
-    private long startTime, endTime;
+    private long startTime, endTime, firstTime;
 
     @Override
     public void onPreviewFrame(final byte[] data, final Camera camera) {
@@ -74,6 +92,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                     try {
                         Log.d(OCR_TAG, "----------------start---------------");
                         startTime = System.currentTimeMillis();
+                        firstTime = startTime;
                         Camera.Size size = camera.getParameters().getPreviewSize();
                         int left = 0;
                         int top = 0;
@@ -97,7 +116,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                                     hintImage = (MyImageView) getTag();
                                 }
                             }
-                            final Bitmap ocrBitmap = OcrUtil.getInstance().catchPhoneRect(OcrUtil.rotateToDegrees(bitmap, 90), hintImage);
+                            final Bitmap ocrBitmap = OcrUtil.getInstance().getBitmap(bitmap, hintImage);
                             if (null == ocrBitmap) {
                                 isOcrDoing = false;
                                 return;
@@ -105,36 +124,59 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
                             endTime = System.currentTimeMillis();
                             Log.d(OCR_TAG, "deal with image data: " + (endTime - startTime) + "ms");
                             startTime = endTime;
-                            //start ocr
-                            OcrUtil.getInstance().scanChinese(ocrBitmap, new RecognizeCallback() {
-                                @Override
-                                public void response(String result) {
-                                    endTime = System.currentTimeMillis();
-                                    Log.d(OCR_TAG, "ocr time cost: " + (endTime - startTime) + "ms");
-                                    startTime = endTime;
-                                    Log.d(OCR_TAG, "ocr result: " + result);
-                                    if (!TextUtils.isEmpty(getChinese(result.replace(" ", "")))) {
-                                        Log.d(OCR_TAG, "ocr result format: " + getChinese(result));
+                            if (TextUtils.equals(type, cn)) {
+                                //start ocr
+                                OcrUtil.getInstance().scanChinese(ocrBitmap, new RecognizeCallback() {
+                                    @Override
+                                    public void response(String result) {
+                                        endTime = System.currentTimeMillis();
+                                        Log.d(OCR_TAG, "ocr time cost: " + (endTime - startTime) + "ms");
+                                        startTime = endTime;
+                                        Log.d(OCR_TAG, "ocr result: " + result);
+                                        if (!TextUtils.isEmpty(getChinese(result.replace(" ", "")))) {
+                                            Log.d(OCR_TAG, "ocr result format: " + getChinese(result));
+                                        }
+                                        endTime = System.currentTimeMillis();//ocr complete
+                                        isOcrDoing = false;
+                                        Log.d(OCR_TAG, "-----------------end----------------");
+                                        sendInfo(endTime, getChinese(result));
+                                        isOcrComplete = true;
                                     }
-                                    isOcrDoing = false;
-                                    Log.d(OCR_TAG, "-----------------end----------------");
-                                }
-                            });
+                                });
+                            }
+                            if (TextUtils.equals(type, eng)) {
+                                //start ocr
+                                OcrUtil.getInstance().scanEnglish(ocrBitmap, new RecognizeCallback() {
+                                    @Override
+                                    public void response(String result) {
+                                        endTime = System.currentTimeMillis();
+                                        Log.d(OCR_TAG, "ocr time cost: " + (endTime - startTime) + "ms");
+                                        startTime = endTime;
+                                        Log.d(OCR_TAG, "ocr result: " + result);
+                                        if (!TextUtils.isEmpty(getEnglish(result.replace(" ", "")))) {
+                                            Log.d(OCR_TAG, "ocr result format: " + getEnglish(result));
+                                        }
+                                        endTime = System.currentTimeMillis();//ocr complete
+                                        isOcrDoing = false;
+                                        Log.d(OCR_TAG, "-----------------end----------------");
+                                        sendInfo(endTime, getEnglish(result));
+                                        isOcrComplete = true;
+                                    }
+                                });
+                            }
                         }
                     } catch (Exception e) {
-                        Log.d(OCR_TAG, e.getMessage());
+                        e.printStackTrace();
                         isOcrDoing = false;
                     }
                 }
             }).start();
         }
-
-
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        openCamera(1);
+        getCameraInstance(1);
     }
 
     @Override
@@ -214,15 +256,15 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 
 //        imageWidth = sizes.get(0).width;
 //        imageHeight = sizes.get(0).height;
-        param.setPreviewSize(imageWidth, imageHeight);
-        param.setPictureSize(imageWidth, imageHeight);
+//        param.setPreviewSize(imageWidth, imageHeight);
+//        param.setPictureSize(imageWidth, imageHeight);
 
         //preview frame default
         int frame = 40;
         param.setPreviewFrameRate(frame);
 
         mCamera.setParameters(param);
-        mCamera.setDisplayOrientation(270);
+        setPreviewOrientation(activity, mCamera, 1);
         startPreview();
 
     }
@@ -244,46 +286,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         if (null != mCamera) {
             mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
-        }
-    }
-
-    public void openCamera(int facing) {
-        Camera.CameraInfo info = new Camera.CameraInfo();
-        switch (facing) {
-            case 1:
-                for (int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
-                    Camera.getCameraInfo(cameraId, info);
-                    if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        try {
-                            mCamera = Camera.open(cameraId);
-                        } catch (Exception e) {
-                            if (null != mCamera) {
-                                mCamera.release();
-                                mCamera = null;
-                            }
-                        }
-                        break;
-                    }
-                }
-                break;
-            case 0:
-                for (int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
-                    Camera.getCameraInfo(cameraId, info);
-                    if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                        try {
-                            mCamera = Camera.open(cameraId);
-                        } catch (Exception e) {
-                            if (null != mCamera) {
-                                mCamera.release();
-                                mCamera = null;
-                            }
-                        }
-                        break;
-                    }
-                }
-                break;
-            default:
-                break;
         }
     }
 
@@ -340,4 +342,179 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }
         return sb.toString();
     }
+
+    public Camera getCameraInstance(int facing) {
+        if (null == mCamera) {
+            CameraHandlerThread mThread = new CameraHandlerThread("camera thread");
+            synchronized (mThread) {
+                mThread.openCamera(facing);
+            }
+        }
+        return mCamera;
+    }
+
+    private class CameraHandlerThread extends HandlerThread {
+
+        Handler mHandler;
+
+        public CameraHandlerThread(String name) {
+            super(name);
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera(final int facing) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    selectCamera(facing);
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Log.w(TAG, "wait was interrupted");
+            }
+        }
+    }
+
+    private void selectCamera(int facing) {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        switch (facing) {
+            case 1:
+                for (int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
+                    Camera.getCameraInfo(cameraId, info);
+                    if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                        try {
+                            mCamera = Camera.open(cameraId);
+                        } catch (Exception e) {
+                            if (null != mCamera) {
+                                mCamera.release();
+                                mCamera = null;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            case 0:
+                for (int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
+                    Camera.getCameraInfo(cameraId, info);
+                    if (info.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                        try {
+                            mCamera = Camera.open(cameraId);
+                        } catch (Exception e) {
+                            if (null != mCamera) {
+                                mCamera.release();
+                                mCamera = null;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void setPreviewOrientation(Activity activity, Camera camera, int facing) {
+        Camera.CameraInfo info = new Camera.CameraInfo();
+        Camera.getCameraInfo(facing, info);
+        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degrees = 0;
+                break;
+            case Surface.ROTATION_90:
+                degrees = 90;
+                break;
+            case Surface.ROTATION_180:
+                degrees = 180;
+                break;
+            case Surface.ROTATION_270:
+                degrees = 270;
+                break;
+        }
+        int displayDegree;
+        if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            displayDegree = (info.orientation + degrees) % 360;
+            displayDegree = (360 - displayDegree) % 360;
+        } else {
+            displayDegree = (info.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(displayDegree);
+    }
+
+    private Handler infoHandler = new Handler() {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case MSG_OCR_TIME_COST:
+                    if (null != callback)
+                        callback.onOcrTimes((String) msg.obj);
+                    break;
+                case MSG_OCR_RESULT:
+                    if (null != callback)
+                        callback.onResult((String) msg.obj);
+                    break;
+                case MSG_OCR_TIME_RESPONSE:
+
+                    break;
+            }
+        }
+    };
+
+    private void sendInfo(long endTime, String result) {
+
+        //bitmap data dispose and ocr cost
+        long doOcrCost = endTime - firstTime;
+        String ocrTimeString = doOcrCost + "ms";
+        handleOcrTimeCost(ocrTimeString);
+
+        //ocr result send
+        handleOcrResult(result);
+
+        //response time send
+        handleResponseTime("搁置");
+
+
+    }
+
+    private void handleOcrTimeCost(String time) {
+        if (null != infoHandler)
+            infoHandler.sendMessage(infoHandler.obtainMessage(MSG_OCR_TIME_COST, time));
+    }
+
+    private void handleOcrResult(String result) {
+        if (null != infoHandler)
+            infoHandler.sendMessage(infoHandler.obtainMessage(MSG_OCR_RESULT, result));
+    }
+
+    private void handleResponseTime(String time) {
+        if (null != infoHandler)
+            infoHandler.sendMessage(infoHandler.obtainMessage(MSG_OCR_TIME_RESPONSE, time));
+    }
+
+    String type;
+
+    public void setOcrMode(String language) {
+        type = language;
+    }
+
+    private void setOcrCallbackListener(OcrCallback callback) {
+        this.callback = callback;
+    }
+
+    public void setListener(OcrCallback callback) {
+        setOcrCallbackListener(callback);
+    }
+
 }
