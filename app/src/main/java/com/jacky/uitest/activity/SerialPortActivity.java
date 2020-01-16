@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -59,9 +58,9 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
     private UsbSerialPort touchPort, otherPort;
     private UsbManager mUsbManager;
     static Handler mHandler;
-    private UsbDeviceReceiver mUsbDeviceReceiver;
+    public static UsbDeviceReceiver mUsbDeviceReceiver;
 
-    private boolean isTouchConnected, isOtherConnected;
+    private boolean isTouchConnected, isOtherConnected, isChecked;
 
     private List<UsbSerialPort> portList = new ArrayList<>();
 
@@ -112,19 +111,6 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
         super.onResume();
         unRegisterReceiver();
         registerReceiver();
-
-        if (null == touchPort) {
-            Log.d(TAG, "no touch serial device");
-        } else {
-            touchConnect();
-        }
-
-        if (null == otherPort) {
-            Log.d(TAG, "no other serial device");
-        } else {
-            otherConnect();
-        }
-
         mHandler.sendEmptyMessage(MSG_RESET_SERIAL_INFO);
     }
 
@@ -146,13 +132,11 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
             }
             otherPort = null;
         }
-        finish();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unRegisterReceiver();
         mHandler.removeCallbacksAndMessages(null);
     }
 
@@ -213,13 +197,15 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
                 viewHolder.serialPortItem.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        otherPort = portList.get(position);
-                        final UsbDevice device = otherPort.getDriver().getDevice();
-                        if (!mUsbManager.hasPermission(device)) {
-                            PendingIntent usbPermissionIntent = PendingIntent.getBroadcast(SerialPortActivity.this, 0, new Intent(INTENT_ACTION_USB_GRANT), 0);
-                            mUsbManager.requestPermission(device, usbPermissionIntent);
-                        } else {
-                            setOtherPort(otherPort);
+                        if (isChecked) {
+                            otherPort = portList.get(position);
+                            final UsbDevice device = otherPort.getDriver().getDevice();
+                            if (!mUsbManager.hasPermission(device)) {
+                                PendingIntent usbPermissionIntent = PendingIntent.getBroadcast(SerialPortActivity.this, 0, new Intent(INTENT_ACTION_USB_GRANT), 0);
+                                mUsbManager.requestPermission(device, usbPermissionIntent);
+                            } else {
+                                setOtherPort(otherPort);
+                            }
                         }
                         if (!isChecked) {
                             Log.d(TAG, "other serial port release");
@@ -347,14 +333,11 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
             touchConnect.setText(getResources().getString(R.string.touch_not_connect));
         } else {
             if (isTouchConnected) {
-                try {
-                    touchPort.close();
-                } catch (IOException e) {
-                }
                 isTouchConnected = false;
                 touchConnect.setText(getResources().getString(R.string.touch_not_connect));
             } else {
-                touchConnect();
+                isTouchConnected = true;
+                touchConnect.setText(getResources().getString(R.string.touch_connect));
             }
         }
     }
@@ -366,14 +349,11 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
             otherConnect.setText(getResources().getString(R.string.other_not_connect));
         } else {
             if (isOtherConnected) {
-                try {
-                    otherPort.close();
-                } catch (IOException e) {
-                }
                 isOtherConnected = false;
                 otherConnect.setText(getResources().getString(R.string.other_not_connect));
             } else {
-                otherConnect();
+                isOtherConnected = true;
+                otherConnect.setText(getResources().getString(R.string.other_connect));
             }
         }
     }
@@ -405,66 +385,7 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
         });
     }
 
-    private void touchConnect() {
-        final UsbManager mUsbManager = (UsbManager) App.getContext().getSystemService(Context.USB_SERVICE);
-        UsbDeviceConnection connection = null;
-        if (null != mUsbManager) {
-            connection = mUsbManager.openDevice(touchPort.getDriver().getDevice());
-        }
-        if (null == connection) {
-            Log.d(TAG, "can not get connection");
-            ToastUtils.showShort("connect failed");
-            return;
-        }
-        try {
-            touchPort.open(connection);
-            touchPort.setParameters(DEFAULT_BAUD_RATE, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
-        } catch (IOException e) {
-            ToastUtils.showShort("Error: " + e.getMessage());
-            try {
-                touchPort.close();
-            } catch (IOException e1) {
-            }
-            touchPort = null;
-            return;
-        }
-        //按钮状态变化
-        touchConnect.setText(getResources().getString(R.string.touch_connect));
-        isTouchConnected = true;
-    }
-
-    private void otherConnect() {
-        final UsbManager mUsbManager = (UsbManager) App.getContext().getSystemService(Context.USB_SERVICE);
-        UsbDeviceConnection connection = null;
-        if (null != mUsbManager) {
-            connection = mUsbManager.openDevice(otherPort.getDriver().getDevice());
-        }
-        if (null == connection) {
-            Log.d(TAG, "can not get connection");
-            ToastUtils.showShort("connect failed");
-            return;
-        }
-
-        try {
-            otherPort.open(connection);
-            otherPort.setParameters(DEFAULT_BAUD_RATE, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
-        } catch (IOException e) {
-            ToastUtils.showShort("Error: " + e.getMessage());
-            try {
-                otherPort.close();
-            } catch (IOException e1) {
-            }
-            otherPort = null;
-            return;
-        }
-        //按钮状态变化
-        otherConnect.setText(getResources().getString(R.string.other_connect));
-    }
-
     private void setPorts(UsbSerialPort touchPort, UsbSerialPort otherPort) {
-        if (null == otherPort) {
-            return;
-        }
         CameraActivity.setPorts(touchPort, otherPort);
     }
 

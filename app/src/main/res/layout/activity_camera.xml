@@ -17,7 +17,7 @@
 
     <fragment
         android:id="@+id/image_view_fragment"
-        android:name="com.jacky.uitest.fragment.ImageFragment"
+        android:name="com.jacky.uitest.fragment.InfoFragment"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1" />

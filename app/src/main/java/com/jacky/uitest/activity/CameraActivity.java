@@ -1,22 +1,63 @@
 package com.jacky.uitest.activity;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
+import androidx.annotation.NonNull;
+
+import com.blankj.utilcode.util.ToastUtils;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
+import com.jacky.uitest.App;
 import com.jacky.uitest.R;
 import com.jacky.uitest.callback.OcrCallback;
+import com.jacky.uitest.utils.ModeUtil;
 import com.jacky.uitest.view.CameraView;
 import com.jacky.uitest.view.MyImageView;
 
-public class CameraActivity extends BaseActivity implements OcrCallback {
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+public class CameraActivity extends BaseActivity implements OcrCallback, Handler.Callback, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
+    //TAG
     private static final String TAG = "CameraActivity";
-    private static UsbSerialPort touchPort, otherPort;
+    //global variable
+    private String ocrResult, responseTimes, ocrTimes;
+    private String selectedMode;
+    //view initialize
     CameraView cameraView;
     MyImageView imageView;
-    private String ocrResult, responseTimes, ocrTimes;
+    Button stop, start, setDefault, returnDefault;
+    RadioGroup modeGroup;
+    //serial port
+    private static UsbSerialPort touchPort, otherPort;
+    //others var
+    Handler mHandler;
+    static Handler receiverHandler;
+    ModeUtil modeUtil;
+    //serial port command
+    private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
+    private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
+
+    private List<String> modes = new ArrayList<>();
+    private List<String> colors = new ArrayList<>();
+
+    private static final int DEFAULT_BAUD_RATE = 115200;
 
     static {
         System.loadLibrary("native-lib");
@@ -27,6 +68,29 @@ public class CameraActivity extends BaseActivity implements OcrCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         initViews();
+        getModes();
+        addRb();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (null != touchPort)
+            connect(touchPort);
+        if (null != otherPort)
+            connect(otherPort);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (null != touchPort) {
+            try {
+                touchPort.close();
+            } catch (IOException e) {
+            }
+            touchPort = null;
+        }
     }
 
     private void initViews() {
@@ -40,6 +104,21 @@ public class CameraActivity extends BaseActivity implements OcrCallback {
         if (TextUtils.equals(getIntent().getStringExtra("chinese"), CN))
             cameraView.setOcrMode(CN);
         cameraView.setListener(this);
+        mHandler = new Handler(this);
+
+        modeGroup = findViewById(R.id.mode_group);
+
+
+        stop = findViewById(R.id.stop);
+        start = findViewById(R.id.start);
+        setDefault = findViewById(R.id.set_default_coordination);
+        returnDefault = findViewById(R.id.return_to_origin);
+
+        stop.setOnClickListener(this);
+        start.setOnClickListener(this);
+        setDefault.setOnClickListener(this);
+        returnDefault.setOnClickListener(this);
+        modeGroup.setOnCheckedChangeListener(this);
     }
 
     public static void setPorts(UsbSerialPort touchPort, UsbSerialPort otherPort) {
@@ -55,6 +134,17 @@ public class CameraActivity extends BaseActivity implements OcrCallback {
             return;
         }
         ocrResult = result;
+        if (null != selectedMode)
+            switch (selectedMode) {
+                case "TEST":
+                    ToastUtils.showLong("test success");
+                    break;
+                case "WIFI_TEST":
+                    ToastUtils.showLong("test test");
+                    break;
+                default:
+                    break;
+            }
     }
 
     @Override
@@ -65,5 +155,166 @@ public class CameraActivity extends BaseActivity implements OcrCallback {
     @Override
     public void onOcrTimes(String time) {
         ocrTimes = time;
+    }
+
+
+    @Override
+    public boolean handleMessage(@NonNull Message msg) {
+        switch (msg.what) {
+
+        }
+        return false;
+    }
+
+    @Override
+    public void onClick(View v) {
+        AlertDialog.Builder builder;
+        switch (v.getId()) {
+            case R.id.stop:
+                builder = createAlertDialog(CameraActivity.this, "提示", "是否要暂停机器");
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (null != mHandler)
+                            mHandler.removeCallbacksAndMessages(null);
+                        setFullScreen();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setFullScreen();
+                    }
+                });
+                builder.show();
+                break;
+            case R.id.start:
+                break;
+            case R.id.set_default_coordination:
+                builder = createAlertDialog(CameraActivity.this, "提示", "是否要设置坐标原点");
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (null == touchPort) {
+                            Log.d(TAG, "touch port is null");
+                            return;
+                        }
+                        try {
+                            touchPort.write(setDefaultCoordination, 100);
+                        } catch (IOException e) {
+                        }
+                        setFullScreen();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setFullScreen();
+                    }
+                });
+                builder.show();
+                break;
+            case R.id.return_to_origin:
+                if (null == touchPort) {
+                    Log.d(TAG, "touch port is null");
+                    return;
+                }
+                try {
+                    Log.d(TAG, "touchPort: " + touchPort);
+                    touchPort.write(returnDefaultOrigin, 100);
+                } catch (IOException e) {
+                }
+                break;
+
+
+        }
+
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup group, int checkedId) {
+        final RadioButton rb = group.findViewById(checkedId);
+        AlertDialog.Builder builder = createAlertDialog(CameraActivity.this, "注意", "确认选择模式：" + rb.getText().toString() + " ？");
+        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                selectedMode = rb.getText().toString();
+                setFullScreen();
+            }
+        });
+        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setFullScreen();
+            }
+        });
+        builder.show();
+    }
+
+    private void setFullScreen() {
+        if (Build.VERSION.SDK_INT > 19) {
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            );
+        }
+    }
+
+    private AlertDialog.Builder createAlertDialog(Context context, String title, String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.setCancelable(false);
+        return builder;
+    }
+
+    private void connect(UsbSerialPort port) {
+        final UsbManager mUsbManager = (UsbManager) App.getContext().getSystemService(USB_SERVICE);
+        UsbDeviceConnection connection = null;
+        if (null != mUsbManager)
+            connection = mUsbManager.openDevice(port.getDriver().getDevice());
+        if (null == connection) {
+            Log.d(TAG, "can not get connection");
+            ToastUtils.showShort("connection failed");
+            return;
+        }
+        try {
+            port.open(connection);
+            port.setParameters(DEFAULT_BAUD_RATE, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+        } catch (IOException e) {
+            ToastUtils.showShort("Error: " + e.getMessage());
+            try {
+                port.close();
+            } catch (IOException e1) {
+            }
+            port = null;
+        }
+    }
+
+    private void getModes() {
+        modeUtil = new ModeUtil();
+        modeUtil.addMode();
+        modes = modeUtil.modes;
+        modeUtil.addColor();
+        colors = modeUtil.colors;
+    }
+
+    private void addRb() {
+        for (int i = 0, j = 0; i < modes.size(); i++, j++) {
+            RadioButton rb = new RadioButton(CameraActivity.this);
+            rb.setButtonDrawable(R.drawable.rb);
+            rb.setPadding(5, 5, 5, 5);
+            rb.setText(modes.get(i));
+            rb.setGravity(1);
+            rb.setTextColor(Color.parseColor(colors.get(j)));
+            RadioGroup.LayoutParams params = new RadioGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(5, 5, 5, 5);
+            modeGroup.addView(rb, params);
+            if (j == colors.size() - 1) j = 0;
+        }
     }
 }

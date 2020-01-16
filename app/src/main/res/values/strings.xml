@@ -9,11 +9,18 @@
     <string name="hint_serial_port_list">请选择对应的串口</string>
     <string name="ocr_start">开启识别</string>
     <string name="refresh_device_list">刷新列表</string>
-    <string name="touch_connect">笔已连接</string>
-    <string name="touch_not_connect">笔未连接</string>
-    <string name="other_connect">键已连接</string>
-    <string name="other_not_connect">键未连接</string>
+    <string name="touch_connect">笔已选择</string>
+    <string name="touch_not_connect">笔未选择</string>
+    <string name="other_connect">键已选择</string>
+    <string name="other_not_connect">键未选择</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <!--    CameraActivity中的字符串资源-->
+    <string name="stop">停止</string>
+    <string name="start">开始</string>
+    <string name="set_default_coordination">设为原点</string>
+    <string name="return_to_origin">返回原点</string>
 </resources>
