@@ -330,7 +330,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private String getEnglish(String param) {
         if (param.length() <= 0)
             return "";
-        Pattern pattern = Pattern.compile("[a-zA-Z]+");
+        Pattern pattern = Pattern.compile("[a-zA-Z-_]+");
         Matcher matcher = pattern.matcher(param);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {

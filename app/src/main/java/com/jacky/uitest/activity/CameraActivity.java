@@ -20,8 +20,10 @@ import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
 
+import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import com.jacky.uitest.App;
 import com.jacky.uitest.R;
 import com.jacky.uitest.callback.OcrCallback;
@@ -31,7 +33,10 @@ import com.jacky.uitest.view.MyImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CameraActivity extends BaseActivity implements OcrCallback, Handler.Callback, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
     //TAG
@@ -39,6 +44,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //global variable
     private String ocrResult, responseTimes, ocrTimes;
     private String selectedMode;
+    private String ok;
+    private boolean isStop;
     //view initialize
     CameraView cameraView;
     MyImageView imageView;
@@ -46,6 +53,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     RadioGroup modeGroup;
     //serial port
     private static UsbSerialPort touchPort, otherPort;
+    private SerialInputOutputManager IOManager;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     //others var
     Handler mHandler;
     static Handler receiverHandler;
@@ -53,15 +62,48 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //serial port command
     private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
+    private byte[] goToSettings = new byte[]{};
+    private byte[] modeWifi_1 = new byte[]{};
+    private byte[] modeWifi_2 = new byte[]{};
+    private byte[] modeWifi_3 = new byte[]{};
+    private byte[] modeWifi_4 = new byte[]{};
+    private byte[] modeWifi_5 = new byte[]{};
 
     private List<String> modes = new ArrayList<>();
     private List<String> colors = new ArrayList<>();
 
     private static final int DEFAULT_BAUD_RATE = 115200;
 
+    //handler msg.what
+    private static final int MSG_MODE_WIFI = 1000;
+    private static final int MSG_MODE_WIFI_1 = 1001;
+    private static final int MSG_MODE_WIFI_2 = 1002;
+    private static final int MSG_MODE_WIFI_3 = 1003;
+    private static final int MSG_MODE_WIFI_4 = 1004;
+    private static final int MSG_MODE_CANCEL = -1;
+
     static {
         System.loadLibrary("native-lib");
     }
+
+    private final SerialInputOutputManager.Listener mListener = new SerialInputOutputManager.Listener() {
+        @Override
+        public void onNewData(final byte[] data) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    read(data);
+                    Log.d(TAG, "ok: " + ok);
+                }
+            });
+        }
+
+        @Override
+        public void onRunError(Exception e) {
+            Log.d(TAG, "runner stop");
+            ok = "error";
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +121,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             connect(touchPort);
         if (null != otherPort)
             connect(otherPort);
+//        resetIOManagerState();
     }
 
     @Override
@@ -91,6 +134,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             }
             touchPort = null;
         }
+//        stopIOManager();
     }
 
     private void initViews() {
@@ -135,16 +179,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         }
         ocrResult = result;
         if (null != selectedMode)
-            switch (selectedMode) {
-                case "TEST":
-                    ToastUtils.showLong("test success");
-                    break;
-                case "WIFI_TEST":
-                    ToastUtils.showLong("test test");
-                    break;
-                default:
-                    break;
-            }
+            start(selectedMode);
     }
 
     @Override
@@ -160,9 +195,31 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 
     @Override
     public boolean handleMessage(@NonNull Message msg) {
-        switch (msg.what) {
-
-        }
+        if (!isStop)
+            switch (msg.what) {
+                case MSG_MODE_WIFI:
+                    writeToTouchPort(goToSettings);
+                    handlerMove(MSG_MODE_WIFI_1, MSG_MODE_WIFI);
+                    break;
+                case MSG_MODE_WIFI_1:
+                    writeToTouchPort(modeWifi_1);
+                    handlerMove(MSG_MODE_WIFI_2, MSG_MODE_WIFI_1);
+                    break;
+                case MSG_MODE_WIFI_2:
+                    writeToTouchPort(modeWifi_2);
+                    handlerMove(MSG_MODE_WIFI_3, MSG_MODE_WIFI_2);
+                    break;
+                case MSG_MODE_WIFI_3:
+                    writeToTouchPort(modeWifi_3);
+                    handlerMove(MSG_MODE_WIFI_4, MSG_MODE_WIFI_3);
+                    break;
+                case MSG_MODE_WIFI_4:
+                    writeToTouchPort(modeWifi_4);
+                    handlerMove(MSG_MODE_WIFI_1, MSG_MODE_WIFI_4);
+                    break;
+                default:
+                    break;
+            }
         return false;
     }
 
@@ -177,6 +234,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     public void onClick(DialogInterface dialog, int which) {
                         if (null != mHandler)
                             mHandler.removeCallbacksAndMessages(null);
+                        isStop = true;
                         setFullScreen();
                     }
                 });
@@ -189,6 +247,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 builder.show();
                 break;
             case R.id.start:
+                isStop = false;
+                if (null != selectedMode)
+                    start(selectedMode);
                 break;
             case R.id.set_default_coordination:
                 builder = createAlertDialog(CameraActivity.this, "提示", "是否要设置坐标原点");
@@ -301,6 +362,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         modes = modeUtil.modes;
         modeUtil.addColor();
         colors = modeUtil.colors;
+
     }
 
     private void addRb() {
@@ -317,4 +379,68 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             if (j == colors.size() - 1) j = 0;
         }
     }
+
+    private void read(byte[] data) {
+        char[] tmp = ConvertUtils.bytes2Chars(data);
+        ok = Arrays.toString(tmp);
+    }
+
+    private boolean isOk(String ok) {
+        if (ok.equals("ok")) {
+            ok = "";
+            return true;
+        }
+        return false;
+    }
+
+    private void writeToTouchPort(byte[] data) {
+        if (null != touchPort)
+            try {
+                touchPort.write(data, 100);
+            } catch (IOException e) {
+            }
+    }
+
+    private void handlerMove(int next, int current) {
+        if (isOk(ok))
+            mHandler.sendEmptyMessage(next);
+        else
+            mHandler.sendEmptyMessage(current);
+    }
+
+    private void start(String mode) {
+        switch (mode) {
+            case "TEST":
+                ToastUtils.showLong("test success");
+                break;
+            case "WIFI_TEST":
+                if (ocrResult.contains("Wi-Fi"))
+                    mHandler.sendEmptyMessage(MSG_MODE_WIFI);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void startIOManager() {
+        if (null != touchPort) {
+            Log.d(TAG, "start IOManager");
+            IOManager = new SerialInputOutputManager(touchPort, mListener);
+            mExecutor.submit(IOManager);
+        }
+    }
+
+    private void stopIOManager() {
+        if (null != IOManager) {
+            Log.d(TAG, "stop IOManager");
+            IOManager.stop();
+            IOManager = null;
+        }
+    }
+
+    private void resetIOManagerState() {
+        stopIOManager();
+        startIOManager();
+    }
+
 }
