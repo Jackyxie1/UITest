@@ -50,7 +50,7 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
     private static final int MSG_RESET_SERIAL_INFO = 1000;
 
     ListView serialPortListView;
-    Button refreshList, ocrStart, touchConnect, otherConnect;
+    Button refreshList, ocrStart, forceStart, touchConnect, otherConnect;
 
     SerialPortAdapter.ViewHolder viewHolder;
 
@@ -96,12 +96,14 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
         serialPortListView = findViewById(R.id.serial_port_list);
         refreshList = findViewById(R.id.refresh_device_list);
         ocrStart = findViewById(R.id.ocr_start);
+        forceStart = findViewById(R.id.force_start);
         touchConnect = findViewById(R.id.touch);
         otherConnect = findViewById(R.id.other);
 
 
         refreshList.setOnClickListener(this);
         ocrStart.setOnClickListener(this);
+        forceStart.setOnClickListener(this);
         touchConnect.setOnClickListener(this);
         otherConnect.setOnClickListener(this);
     }
@@ -109,7 +111,6 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
     @Override
     protected void onResume() {
         super.onResume();
-        unRegisterReceiver();
         registerReceiver();
         mHandler.sendEmptyMessage(MSG_RESET_SERIAL_INFO);
     }
@@ -132,11 +133,13 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
             }
             otherPort = null;
         }
+        unRegisterReceiver();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unRegisterReceiver();
         mHandler.removeCallbacksAndMessages(null);
     }
 
@@ -251,6 +254,8 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
             case R.id.other:
                 otherStateChange();
                 break;
+            case R.id.force_start:
+                startCameraActivity();
             default:
                 break;
         }
@@ -321,9 +326,10 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
     }
 
     private void unRegisterReceiver() {
-        if (null != mUsbDeviceReceiver)
+        if (null != mUsbDeviceReceiver) {
             unregisterReceiver(mUsbDeviceReceiver);
-        mUsbDeviceReceiver = null;
+            mUsbDeviceReceiver = null;
+        }
     }
 
     private void touchStateChange() {

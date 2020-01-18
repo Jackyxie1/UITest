@@ -8,6 +8,7 @@
     <!--    SerialActivity中的字符串资源-->
     <string name="hint_serial_port_list">请选择对应的串口</string>
     <string name="ocr_start">开启识别</string>
+    <string name="force_start">强行进入</string>
     <string name="refresh_device_list">刷新列表</string>
     <string name="touch_connect">笔已选择</string>
     <string name="touch_not_connect">笔未选择</string>

@@ -35,7 +35,10 @@
             android:id="@+id/touch"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_weight="1"
+            android:background="@drawable/button_press_2"
             android:text="@string/touch_not_connect"
             android:textColor="#000000" />
 
@@ -43,7 +46,10 @@
             android:id="@+id/other"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_weight="1"
+            android:background="@drawable/button_press_2"
             android:text="@string/other_not_connect"
             android:textColor="#000000" />
 
@@ -51,7 +57,10 @@
             android:id="@+id/refresh_device_list"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_weight="1"
+            android:background="@drawable/button_press_2"
             android:text="@string/refresh_device_list"
             android:textColor="#F44336" />
 
@@ -59,8 +68,22 @@
             android:id="@+id/ocr_start"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
             android:layout_weight="1"
+            android:background="@drawable/button_press_2"
             android:text="@string/ocr_start"
+            android:textColor="#673AB7" />
+
+        <Button
+            android:id="@+id/force_start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/button_press_2"
+            android:text="@string/force_start"
             android:textColor="#673AB7" />
 
     </LinearLayout>

@@ -1,7 +1,6 @@
 package com.jacky.uitest.view;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,6 +19,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.jacky.uitest.App;
 import com.jacky.uitest.callback.OcrCallback;
@@ -55,7 +55,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private int imageWidth = 1920;
 
     private MyImageView hintImage;
-    Activity activity;
+    AppCompatActivity activity;
     OcrCallback callback = null;
 
     public CameraView(Context context) {
@@ -77,7 +77,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         holder = getHolder();
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        activity = (Activity) context;
+        activity = (AppCompatActivity) context;
     }
 
     private long startTime, endTime, firstTime;
@@ -260,7 +260,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
 //        param.setPictureSize(imageWidth, imageHeight);
 
         //preview frame default
-        int frame = 40;
+        int frame = 30;
         param.setPreviewFrameRate(frame);
 
         mCamera.setParameters(param);
@@ -423,7 +423,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }
     }
 
-    private void setPreviewOrientation(Activity activity, Camera camera, int facing) {
+    private void setPreviewOrientation(AppCompatActivity activity, Camera camera, int facing) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(facing, info);
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();

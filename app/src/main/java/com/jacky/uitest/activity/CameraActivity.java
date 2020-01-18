@@ -1,9 +1,11 @@
 package com.jacky.uitest.activity;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.os.Build;
@@ -19,8 +21,10 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 import com.blankj.utilcode.util.ConvertUtils;
+import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
@@ -59,6 +63,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     Handler mHandler;
     static Handler receiverHandler;
     ModeUtil modeUtil;
+    CameraModeListener cmListener;
     //serial port command
     private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
@@ -287,13 +292,12 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 }
                 break;
 
-
         }
 
     }
 
     @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
+    public void onCheckedChanged(final RadioGroup group, int checkedId) {
         final RadioButton rb = group.findViewById(checkedId);
         AlertDialog.Builder builder = createAlertDialog(CameraActivity.this, "注意", "确认选择模式：" + rb.getText().toString() + " ？");
         builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
@@ -368,11 +372,13 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private void addRb() {
         for (int i = 0, j = 0; i < modes.size(); i++, j++) {
             RadioButton rb = new RadioButton(CameraActivity.this);
-            rb.setButtonDrawable(R.drawable.rb);
+            rb.setButtonDrawable(null);
             rb.setPadding(5, 5, 5, 5);
+            rb.setBackground(getBackgroundSelector(Color.parseColor(colors.get(j))));
             rb.setText(modes.get(i));
-            rb.setGravity(1);
-            rb.setTextColor(Color.parseColor(colors.get(j)));
+            rb.setTextSize(14);
+            rb.setTextColor(getTextColorSelector());
+            rb.setPaddingRelative(50,25,50,25);
             RadioGroup.LayoutParams params = new RadioGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             params.setMargins(5, 5, 5, 5);
             modeGroup.addView(rb, params);
@@ -441,6 +447,48 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private void resetIOManagerState() {
         stopIOManager();
         startIOManager();
+    }
+
+    interface CameraModeListener {
+        void onCameraMode(int facing);
+    }
+
+    private void setCameraModeListener(CameraModeListener cmListener) {
+        this.cmListener = cmListener;
+    }
+
+    public void setModeListener(CameraModeListener cmListener) {
+        setCameraModeListener(cmListener);
+    }
+
+    private StateListDrawable getBackgroundSelector(int color) {
+        GradientDrawable normal = new GradientDrawable();
+        GradientDrawable pressed = new GradientDrawable();
+        StateListDrawable modeSelector = new StateListDrawable();
+
+        normal.setShape(GradientDrawable.RECTANGLE);
+        normal.setStroke(SizeUtils.dp2px(1), Color.parseColor("#EFFF31"));
+        normal.setColor(Color.parseColor("#000000"));
+        normal.setCornerRadius(SizeUtils.dp2px(5));
+
+        pressed.setShape(GradientDrawable.RECTANGLE);
+        pressed.setStroke(SizeUtils.dp2px(1), Color.parseColor("#EFFF31"));
+        normal.setColor(color);
+        pressed.setCornerRadius(SizeUtils.dp2px(5));
+
+        modeSelector.addState(new int[]{android.R.attr.state_checked}, normal);
+        modeSelector.addState(new int[]{}, pressed);
+        return modeSelector;
+    }
+
+    private ColorStateList getTextColorSelector() {
+        int[][] states = new int[2][];
+        states[0] = new int[]{android.R.attr.state_checked};
+        states[1] = new int[]{};
+        int normal = Color.parseColor("#000000");
+        int pressed = Color.parseColor("#FFFFFF");
+        int[] colors = new int[]{pressed, normal};
+        return new ColorStateList(states, colors);
     }
 
 }
