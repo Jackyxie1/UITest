@@ -12,67 +12,111 @@
         android:layout_alignParentTop="true"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/set_default_coordination"
+        <LinearLayout
+            android:id="@+id/settings_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/button_press"
-            android:gravity="center"
-            android:text="@string/set_default_coordination"
-            android:textAllCaps="false"
-            android:textColor="#000000"
-            android:textSize="14sp" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/set_default_coordination"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/button_press"
+                android:gravity="center"
+                android:text="@string/set_default_coordination"
+                android:textAllCaps="false"
+                android:textColor="#000000"
+                android:textSize="14sp" />
 
 
-        <Button
-            android:id="@+id/return_to_origin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/button_press"
-            android:gravity="center"
-            android:text="@string/return_to_origin"
-            android:textAllCaps="false"
-            android:textColor="#000000"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/return_to_origin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/button_press"
+                android:gravity="center"
+                android:text="@string/return_to_origin"
+                android:textAllCaps="false"
+                android:textColor="#000000"
+                android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/stop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/button_press"
-            android:gravity="center"
-            android:text="@string/stop"
-            android:textAllCaps="false"
-            android:textColor="#000000"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/button_press"
+                android:gravity="center"
+                android:text="@string/stop"
+                android:textAllCaps="false"
+                android:textColor="#000000"
+                android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/button_press"
-            android:gravity="center"
-            android:text="@string/start"
-            android:textAllCaps="false"
-            android:textColor="#000000"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/button_press"
+                android:gravity="center"
+                android:text="@string/start"
+                android:textAllCaps="false"
+                android:textColor="#000000"
+                android:textSize="14sp" />
+
+
+        </LinearLayout>
+
 
         <RadioGroup
             android:id="@+id/camera_mode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/front_camera"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/camera_mode"
+                android:button="@null"
+                android:checked="true"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/camera_front"
+                android:textColor="@color/camera_select_color" />
+
+            <RadioButton
+                android:id="@+id/back_camera"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:background="@drawable/camera_mode"
+                android:button="@null"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/camera_back"
+                android:textColor="@color/camera_select_color" />
 
 
         </RadioGroup>
@@ -84,7 +128,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/settings_layout"
-        android:orientation="horizontal">
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:text="@string/select_mode"
+            android:textColor="#000000"
+            android:textSize="18sp" />
 
         <RadioGroup
             android:id="@+id/mode_group"

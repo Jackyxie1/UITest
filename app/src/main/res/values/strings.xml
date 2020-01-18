@@ -24,4 +24,7 @@
     <string name="start">开始</string>
     <string name="set_default_coordination">设为原点</string>
     <string name="return_to_origin">返回原点</string>
+    <string name="select_mode">请选择工作模式</string>
+    <string name="camera_front">前置摄像</string>
+    <string name="camera_back">后置摄像</string>
 </resources>

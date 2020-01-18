@@ -54,7 +54,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     CameraView cameraView;
     MyImageView imageView;
     Button stop, start, setDefault, returnDefault;
-    RadioGroup modeGroup;
+    RadioGroup modeGroup, cameraModeGroup;
     //serial port
     private static UsbSerialPort touchPort, otherPort;
     private SerialInputOutputManager IOManager;
@@ -156,6 +156,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         mHandler = new Handler(this);
 
         modeGroup = findViewById(R.id.mode_group);
+        cameraModeGroup = findViewById(R.id.camera_mode);
 
 
         stop = findViewById(R.id.stop);
@@ -168,6 +169,25 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         setDefault.setOnClickListener(this);
         returnDefault.setOnClickListener(this);
         modeGroup.setOnCheckedChangeListener(this);
+        cameraModeGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.front_camera:
+                        cameraView.setFront(true);
+                        cameraView.setVisibility(View.GONE);
+                        cameraView.setVisibility(View.VISIBLE);
+                        break;
+                    case R.id.back_camera:
+                        cameraView.setBack(true);
+                        cameraView.setVisibility(View.GONE);
+                        cameraView.setVisibility(View.VISIBLE);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
     }
 
     public static void setPorts(UsbSerialPort touchPort, UsbSerialPort otherPort) {
@@ -378,7 +398,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             rb.setText(modes.get(i));
             rb.setTextSize(14);
             rb.setTextColor(getTextColorSelector());
-            rb.setPaddingRelative(50,25,50,25);
+            rb.setPaddingRelative(50, 25, 50, 25);
             RadioGroup.LayoutParams params = new RadioGroup.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             params.setMargins(5, 5, 5, 5);
             modeGroup.addView(rb, params);
@@ -449,7 +469,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         startIOManager();
     }
 
-    interface CameraModeListener {
+    public interface CameraModeListener {
         void onCameraMode(int facing);
     }
 

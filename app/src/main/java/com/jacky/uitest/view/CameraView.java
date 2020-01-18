@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -19,9 +18,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.jacky.uitest.App;
+import com.jacky.uitest.activity.CameraActivity;
 import com.jacky.uitest.callback.OcrCallback;
 import com.jacky.uitest.callback.RecognizeCallback;
 import com.jacky.uitest.utils.OcrUtil;
@@ -50,12 +49,15 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     private SurfaceHolder holder;
     private Camera mCamera;
     private boolean isPreview, isOcrDoing, isOcrComplete;
+    private boolean isFront = true, isBack;
+    //camera mode
+    public int front = 1, back = 0;
     //preview size default
     private int imageHeight = 1080;
     private int imageWidth = 1920;
 
     private MyImageView hintImage;
-    AppCompatActivity activity;
+    CameraActivity activity;
     OcrCallback callback = null;
 
     public CameraView(Context context) {
@@ -77,7 +79,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         holder = getHolder();
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        activity = (AppCompatActivity) context;
+        activity = (CameraActivity) context;
     }
 
     private long startTime, endTime, firstTime;
@@ -174,21 +176,44 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }
     }
 
+    public void setFront(boolean front) {
+        isFront = front;
+    }
+
+    public void setBack(boolean back) {
+        isBack = back;
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        getCameraInstance(1);
+        Log.d("surfaceCreated", "surfaceCreated is called");
+        if (null != mCamera) mCamera = null;
+        if (isFront) {
+            openCamera(front);
+        }
+        if (isBack) {
+            openCamera(back);
+        }
+        Log.d("openCamera", "openCamera is called");
     }
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if (null != mCamera)
-            initCameraParams();
+            if (isFront) {
+                initCameraParams(front);
+                isFront = false;
+            } else if (isBack) {
+                initCameraParams(back);
+                isBack = false;
+            }
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
         try {
             release();
+            Log.d("release", "release is called");
         } catch (Exception e) {
         }
     }
@@ -240,7 +265,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     /**
      * set camera parameter
      */
-    public void initCameraParams() {
+    public void initCameraParams(int facing) {
         stopPreview();
         Camera.Parameters param = mCamera.getParameters();
         List<Camera.Size> sizes = param.getSupportedPreviewSizes();
@@ -264,7 +289,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         param.setPreviewFrameRate(frame);
 
         mCamera.setParameters(param);
-        setPreviewOrientation(activity, mCamera, 1);
+        setPreviewOrientation(activity, mCamera, facing);
         startPreview();
 
     }
@@ -275,7 +300,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             mCamera.setPreviewCallback(this);
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
-            mCamera.autoFocus(autofocus);
+            mCamera.autoFocus(autoFocus);
         } catch (IOException e) {
             mCamera.release();
             mCamera = null;
@@ -290,7 +315,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     }
 
     //camera auto focus
-    Camera.AutoFocusCallback autofocus = new Camera.AutoFocusCallback() {
+    Camera.AutoFocusCallback autoFocus = new Camera.AutoFocusCallback() {
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
             postDelayed(doAutoFocus, 1000);
@@ -301,7 +326,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         public void run() {
             if (null != mCamera) {
                 try {
-                    mCamera.autoFocus(autofocus);
+                    mCamera.autoFocus(autoFocus);
                 } catch (Exception e) {
                 }
             }
@@ -311,8 +336,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     public void release() {
         if (isPreview && null != mCamera) {
             isPreview = false;
-            mCamera.setPreviewCallback(null);
             mCamera.stopPreview();
+            mCamera.setPreviewCallback(null);
             mCamera.release();
             mCamera = null;
         }
@@ -343,48 +368,50 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         return sb.toString();
     }
 
-    public Camera getCameraInstance(int facing) {
-        if (null == mCamera) {
-            CameraHandlerThread mThread = new CameraHandlerThread("camera thread");
-            synchronized (mThread) {
-                mThread.openCamera(facing);
-            }
-        }
-        return mCamera;
-    }
+//    public Camera getCameraInstance(int facing) {
+//        if (null == mCamera) {
+//            CameraHandlerThread mThread = new CameraHandlerThread("camera thread");
+//            synchronized (mThread) {
+//                mThread.openCamera(facing);
+//                Log.d("openCamera","openCamera方法被调用");
+//            }
+//        }
+//        return mCamera;
+//    }
 
-    private class CameraHandlerThread extends HandlerThread {
+//    private class CameraHandlerThread extends HandlerThread {
+//
+//        Handler mHandler;
+//
+//        CameraHandlerThread(String name) {
+//            super(name);
+//            start();
+//            mHandler = new Handler(getLooper());
+//        }
+//
+//        synchronized void notifyCameraOpened() {
+//            notify();
+//        }
+//
+//        void openCamera(final int facing) {
+//            mHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    selectCamera(facing);
+//                    notifyCameraOpened();
+//                }
+//            });
+//            try {
+//                wait();
+//            } catch (InterruptedException e) {
+//                Log.w(TAG, "wait was interrupted");
+//            }
+//        }
+//    }
 
-        Handler mHandler;
-
-        public CameraHandlerThread(String name) {
-            super(name);
-            start();
-            mHandler = new Handler(getLooper());
-        }
-
-        synchronized void notifyCameraOpened() {
-            notify();
-        }
-
-        void openCamera(final int facing) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    selectCamera(facing);
-                    notifyCameraOpened();
-                }
-            });
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Log.w(TAG, "wait was interrupted");
-            }
-        }
-    }
-
-    private void selectCamera(int facing) {
+    private void openCamera(int facing) {
         Camera.CameraInfo info = new Camera.CameraInfo();
+
         switch (facing) {
             case 1:
                 for (int cameraId = 0; cameraId < Camera.getNumberOfCameras(); cameraId++) {
@@ -423,7 +450,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }
     }
 
-    private void setPreviewOrientation(AppCompatActivity activity, Camera camera, int facing) {
+    private void setPreviewOrientation(CameraActivity activity, Camera camera, int facing) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         Camera.getCameraInfo(facing, info);
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
