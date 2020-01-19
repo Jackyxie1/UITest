@@ -62,7 +62,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //serial port command
     private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
-    private byte[] testByte = new byte[]{0x47, 0x30, 0x30, 0x58, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x31, 0x30, 0x0A};
+    private byte[] testByte = new byte[]{0x47, 0x30, 0x30, 0x58, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x30, 0x30, 0x0A};
     private byte[] goToSettings = new byte[]{0x47, 0x30, 0x30, 0x58, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x31, 0x30, 0x0A};
     private byte[] modeWifi_1 = new byte[]{};
     private byte[] modeWifi_2 = new byte[]{};
@@ -266,6 +266,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                             touchPort.write(setDefaultCoordination, 100);
                         } catch (IOException e) {
                         }
+                        isOk = read();
+                        Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
                         setFullScreen();
                     }
                 });
@@ -287,6 +289,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     touchPort.write(returnDefaultOrigin, 100);
                 } catch (IOException e) {
                 }
+                isOk = read();
+                Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
                 break;
             case R.id.test:
                 writeToTouchPort(testByte);
@@ -379,7 +383,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         //handle incoming data
         if (null != touchPort)
             try {
-                int len = touchPort.read(readBuffer.array(), 100);
+                int len = touchPort.read(readBuffer.array(), 0);
                 if (len < 0) return false;
                 else {
                     Log.d(TAG, "read data len = " + len);
