@@ -36,7 +36,7 @@ import com.jacky.uitest.view.MyImageView;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -309,7 +309,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 break;
             case R.id.test:
                 writeToTouchPort(testByte);
-                Log.d("ok", "return ok? " + isOk(ok) + " return hex string: " + ok);
+                Log.d("ok", "return ok? " + isOk(ok) + " return hex string: " + ok + new Date("YYYY-MM-DD hh-mm-ss"));
                 break;
 
         }
