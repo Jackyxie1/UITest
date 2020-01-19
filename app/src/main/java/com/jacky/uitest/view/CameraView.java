@@ -251,13 +251,16 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         stopPreview();
         Camera.Parameters param = mCamera.getParameters();
         List<Camera.Size> sizes = param.getSupportedPreviewSizes();
-        for (int i = 0; i < sizes.size(); i++) {
-            if ((sizes.get(i).width >= imageWidth && sizes.get(i).height >= imageHeight) || i == sizes.size() - 1) {
-                imageWidth = sizes.get(i).width;
-                imageHeight = sizes.get(i).height;
-                break;
-            }
-        }
+//        for (int i = 0; i < sizes.size(); i++) {
+//            if ((sizes.get(i).width >= imageWidth && sizes.get(i).height >= imageHeight) || i == sizes.size() - 1) {
+//                imageWidth = sizes.get(i).width;
+//                imageHeight = sizes.get(i).height;
+//                break;
+//            }
+//        }
+        imageHeight=sizes.get(1).height;
+        imageWidth=sizes.get(1).width;
+
         param.setPreviewSize(imageWidth, imageHeight);
         param.setPictureSize(imageWidth, imageHeight);
 
