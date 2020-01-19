@@ -46,8 +46,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private String selectedMode;
     private String ok = "6F6B0D0A";
     private boolean isStop, isOk;
+    private static final int BUFFER_SIZE = 4096;
 
-    private final ByteBuffer readBuffer = ByteBuffer.allocate(4096);
+    private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
     //view initialize
     CameraView cameraView;
     MyImageView imageView;
@@ -389,12 +390,12 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     Log.d(TAG, "read data len = " + len);
                     final byte[] tmp = new byte[len];
                     readBuffer.get(tmp, 0, len);
+                    readBuffer.clear();
                     Log.d("ok", "return data to hex string: " + ConvertUtils.bytes2HexString(tmp));
                     return TextUtils.equals(ok, ConvertUtils.bytes2HexString(tmp));
                 }
             } catch (IOException e) {
             }
-        readBuffer.clear();
         return false;
     }
 
