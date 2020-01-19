@@ -52,7 +52,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //view initialize
     CameraView cameraView;
     MyImageView imageView;
-    Button stop, start, setDefault, returnDefault, test;
+    Button stop, start, setDefault, returnDefault, test, xTestP, xTestN;
     RadioGroup modeGroup, cameraModeGroup;
     //serial port
     private static UsbSerialPort touchPort, otherPort;
@@ -64,12 +64,13 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] testByte = new byte[]{0x47, 0x30, 0x30, 0x58, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x30, 0x30, 0x0A};
+    private byte[] testByteXP = new byte[]{0x47, 0x30, 0x30, 0x58, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x30, 0x30, 0x0A};
+    private byte[] testByteXN = new byte[]{0x47, 0x30, 0x30, 0x58, 0x2D, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x30, 0x30, 0x0A};
     private byte[] goToSettings = new byte[]{0x47, 0x30, 0x30, 0x58, 0x36, 0x30, 0x59, 0x2D, 0x36, 0x30, 0x30, 0x5A, 0x2D, 0x31, 0x30, 0x0A};
     private byte[] modeWifi_1 = new byte[]{};
     private byte[] modeWifi_2 = new byte[]{};
     private byte[] modeWifi_3 = new byte[]{};
     private byte[] modeWifi_4 = new byte[]{};
-    private byte[] modeWifi_5 = new byte[]{};
 
     private List<String> modes = new ArrayList<>();
     private List<String> colors = new ArrayList<>();
@@ -138,12 +139,16 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         stop = findViewById(R.id.stop);
         start = findViewById(R.id.start);
         test = findViewById(R.id.test);
+        xTestP = findViewById(R.id.x_test_p);
+        xTestN = findViewById(R.id.x_test_n);
         setDefault = findViewById(R.id.set_default_coordination);
         returnDefault = findViewById(R.id.return_to_origin);
 
         stop.setOnClickListener(this);
         start.setOnClickListener(this);
         test.setOnClickListener(this);
+        xTestP.setOnClickListener(this);
+        xTestN.setOnClickListener(this);
         setDefault.setOnClickListener(this);
         returnDefault.setOnClickListener(this);
         modeGroup.setOnCheckedChangeListener(this);
@@ -294,6 +299,16 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 isOk = read();
                 Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
                 break;
+            case R.id.x_test_p:
+                writeToTouchPort(testByteXP);
+                isOk = read();
+                Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
+                break;
+            case R.id.x_test_n:
+                writeToTouchPort(testByteXN);
+                isOk = read();
+                Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
+                break;
 
         }
 
@@ -387,17 +402,13 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     final byte[] tmp = new byte[len];
                     readBuffer.get(tmp, 0, len);
                     readBuffer.clear();
-                    Log.d("ok", "return data to hex string: " + ConvertUtils.bytes2HexString(tmp));
-                    return ConvertUtils.bytes2HexString(tmp).contains(ok);
+                    String strTmp = ConvertUtils.bytes2HexString(tmp);
+                    int length = strTmp.length();
+                    Log.d("ok", "return data to hex string: " + strTmp.substring(length - 8, length - 1));
+                    return TextUtils.equals(ok, strTmp.substring(length - 8, length - 1));
                 }
             } catch (IOException e) {
             }
-        return false;
-    }
-
-    private boolean isOk(String ok) {
-        if (null != ok)
-            return ok.equals("6F6B0D0A");
         return false;
     }
 
@@ -410,7 +421,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     }
 
     private void handlerMove(int next, int current) {
-        if (isOk(ok))
+        if (isOk)
             mHandler.sendEmptyMessage(next);
         else
             mHandler.sendEmptyMessage(current);

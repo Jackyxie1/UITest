@@ -28,4 +28,6 @@
     <string name="camera_front">前置摄像</string>
     <string name="camera_back">后置摄像</string>
     <string name="test">测试返回值</string>
+    <string name="x_test_p">测试X正向</string>
+    <string name="x_test_n">测试X负向</string>
 </resources>
