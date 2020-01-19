@@ -394,6 +394,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 }
             } catch (IOException e) {
             }
+        readBuffer.clear();
         return false;
     }
 
