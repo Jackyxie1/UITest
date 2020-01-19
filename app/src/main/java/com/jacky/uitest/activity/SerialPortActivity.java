@@ -257,6 +257,10 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
                 otherStateChange();
                 break;
             case R.id.force_start:
+                if (TextUtils.equals(touchConnect.getText(), getResources().getString(R.string.touch_connect))) {
+                    ToastUtils.showShort("当前已连接串口，请直接开始识别");
+                    return;
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(SerialPortActivity.this);
                 builder.setTitle("警告");
                 builder.setMessage("确定要强行进入识别页吗？这将无法使用串口功能");

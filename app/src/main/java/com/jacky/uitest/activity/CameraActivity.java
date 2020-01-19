@@ -65,7 +65,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //serial port command
     private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
-    private byte[] goToSettings = new byte[]{};
+    private byte[] goToSettings = new byte[]{0x47,0x30,0x30,0x58,0x30,0x30,0x30};
     private byte[] modeWifi_1 = new byte[]{};
     private byte[] modeWifi_2 = new byte[]{};
     private byte[] modeWifi_3 = new byte[]{};

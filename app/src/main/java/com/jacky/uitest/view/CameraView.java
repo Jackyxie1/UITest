@@ -294,7 +294,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
     Camera.AutoFocusCallback autoFocus = new Camera.AutoFocusCallback() {
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
-            postDelayed(doAutoFocus, 1000);
+            postDelayed(doAutoFocus, 2000);
         }
     };
     private Runnable doAutoFocus = new Runnable() {
