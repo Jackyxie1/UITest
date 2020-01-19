@@ -267,8 +267,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                             touchPort.write(setDefaultCoordination, 100);
                         } catch (IOException e) {
                         }
-                        isOk = read();
-                        Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
                         setFullScreen();
                     }
                 });
@@ -290,8 +288,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     touchPort.write(returnDefaultOrigin, 100);
                 } catch (IOException e) {
                 }
-                isOk = read();
-                Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
                 break;
             case R.id.test:
                 writeToTouchPort(testByte);
@@ -392,7 +388,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     readBuffer.get(tmp, 0, len);
                     readBuffer.clear();
                     Log.d("ok", "return data to hex string: " + ConvertUtils.bytes2HexString(tmp));
-                    return TextUtils.equals(ok, ConvertUtils.bytes2HexString(tmp));
+                    return ConvertUtils.bytes2HexString(tmp).contains(ok);
                 }
             } catch (IOException e) {
             }
