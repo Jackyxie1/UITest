@@ -26,7 +26,6 @@ import com.blankj.utilcode.util.ConvertUtils;
 import com.blankj.utilcode.util.SizeUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
-import com.hoho.android.usbserial.util.SerialInputOutputManager;
 import com.jacky.uitest.App;
 import com.jacky.uitest.R;
 import com.jacky.uitest.callback.OcrCallback;
@@ -35,11 +34,9 @@ import com.jacky.uitest.view.CameraView;
 import com.jacky.uitest.view.MyImageView;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class CameraActivity extends BaseActivity implements OcrCallback, Handler.Callback, View.OnClickListener, RadioGroup.OnCheckedChangeListener {
     //TAG
@@ -47,8 +44,10 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //global variable
     private String ocrResult, responseTimes, ocrTimes;
     private String selectedMode;
-    private String ok, testIt;
-    private boolean isStop;
+    private String ok = "6F6B0D0A";
+    private boolean isStop, isOk;
+
+    private final ByteBuffer readBuffer = ByteBuffer.allocate(4096);
     //view initialize
     CameraView cameraView;
     MyImageView imageView;
@@ -56,8 +55,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     RadioGroup modeGroup, cameraModeGroup;
     //serial port
     private static UsbSerialPort touchPort, otherPort;
-    private SerialInputOutputManager IOManager;
-    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     //others var
     Handler mHandler;
     static Handler receiverHandler;
@@ -90,25 +87,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         System.loadLibrary("native-lib");
     }
 
-    private final SerialInputOutputManager.Listener mListener = new SerialInputOutputManager.Listener() {
-        @Override
-        public void onNewData(final byte[] data) {
-            CameraActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    CameraActivity.this.read(data);
-                }
-            });
-            Log.d(TAG, "ok: " + ok.toString());
-        }
-
-        @Override
-        public void onRunError(Exception e) {
-            Log.d(TAG, "runner stop");
-            ok = "error";
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -125,7 +103,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             connect(touchPort);
         if (null != otherPort)
             connect(otherPort);
-        resetIOManagerState();
     }
 
     @Override
@@ -138,7 +115,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             }
             touchPort = null;
         }
-        stopIOManager();
     }
 
     private void initViews() {
@@ -314,7 +290,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 break;
             case R.id.test:
                 writeToTouchPort(testByte);
-                Log.d("ok", "return ok? " + isOk(ok) + " return hex string: " + ok + " " + testIt);
+                isOk = read();
+                Log.d("ok", "return ok? " + isOk + " return hex string: " + ok);
                 break;
 
         }
@@ -398,8 +375,22 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         }
     }
 
-    private void read(byte[] data) {
-        ok = ConvertUtils.bytes2HexString(data);
+    private boolean read() {
+        //handle incoming data
+        if (null != touchPort)
+            try {
+                int len = touchPort.read(readBuffer.array(), 100);
+                if (len < 0) return false;
+                else {
+                    Log.d(TAG, "read data len = " + len);
+                    final byte[] tmp = new byte[len];
+                    readBuffer.get(tmp, 0, len);
+                    Log.d("ok", "return data to hex string: " + ConvertUtils.bytes2HexString(tmp));
+                    return TextUtils.equals(ok, ConvertUtils.bytes2HexString(tmp));
+                }
+            } catch (IOException e) {
+            }
+        return false;
     }
 
     private boolean isOk(String ok) {
@@ -435,27 +426,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             default:
                 break;
         }
-    }
-
-    private void startIOManager() {
-        if (null != touchPort) {
-            Log.d(TAG, "start IOManager");
-            IOManager = new SerialInputOutputManager(touchPort, mListener);
-            mExecutor.submit(IOManager);
-        }
-    }
-
-    private void stopIOManager() {
-        if (null != IOManager) {
-            Log.d(TAG, "stop IOManager");
-            IOManager.stop();
-            IOManager = null;
-        }
-    }
-
-    private void resetIOManagerState() {
-        stopIOManager();
-        startIOManager();
     }
 
     private StateListDrawable getBackgroundSelector(int color) {
