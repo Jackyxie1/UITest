@@ -52,7 +52,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //view initialize
     CameraView cameraView;
     MyImageView imageView;
-    Button stop, start, setDefault, returnDefault;
+    Button stop, start, setDefault, returnDefault, test;
     RadioGroup modeGroup, cameraModeGroup;
     //serial port
     private static UsbSerialPort touchPort, otherPort;
@@ -94,7 +94,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         @Override
         public void onNewData(final byte[] data) {
             read(data);
-            Log.d(TAG, "ok: " + ok);
+            Log.d(TAG, "ok: " + ok.toString());
         }
 
         @Override
@@ -155,11 +155,13 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 
         stop = findViewById(R.id.stop);
         start = findViewById(R.id.start);
+        test = findViewById(R.id.test);
         setDefault = findViewById(R.id.set_default_coordination);
         returnDefault = findViewById(R.id.return_to_origin);
 
         stop.setOnClickListener(this);
         start.setOnClickListener(this);
+        test.setOnClickListener(this);
         setDefault.setOnClickListener(this);
         returnDefault.setOnClickListener(this);
         modeGroup.setOnCheckedChangeListener(this);
@@ -307,7 +309,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 break;
             case R.id.test:
                 writeToTouchPort(testByte);
-                Log.d("ok: ","return ok? "+isOk(ok)+" return byte array: "+ok);
+                Log.d("ok", "return ok? " + isOk(ok) + " return hex string: " + ok);
                 break;
 
         }
@@ -392,15 +394,12 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     }
 
     private void read(byte[] data) {
-        char[] tmp = ConvertUtils.bytes2Chars(data);
-        ok = Arrays.toString(tmp);
+        ok = ConvertUtils.bytes2HexString(data);
     }
 
     private boolean isOk(String ok) {
-        if (ok.equals("ok")) {
-            ok = "";
-            return true;
-        }
+        if (null != ok)
+            return ok.equals("6F6B0D0A");
         return false;
     }
 
