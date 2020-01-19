@@ -14,7 +14,7 @@ public class BaseActivity extends AppCompatActivity {
         setFullScreen();
     }
 
-    private void setFullScreen() {
+    public void setFullScreen() {
         if (Build.VERSION.SDK_INT >= 19) {
             View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE

@@ -8,7 +8,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -63,7 +62,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     Handler mHandler;
     static Handler receiverHandler;
     ModeUtil modeUtil;
-    CameraModeListener cmListener;
     //serial port command
     private byte[] setDefaultCoordination = new byte[]{0x47, 0x39, 0x32, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
     private byte[] returnDefaultOrigin = new byte[]{0x47, 0x30, 0x30, 0x58, 0x30, 0x59, 0x30, 0x5A, 0x30, 0x0A};
@@ -94,13 +92,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private final SerialInputOutputManager.Listener mListener = new SerialInputOutputManager.Listener() {
         @Override
         public void onNewData(final byte[] data) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    read(data);
-                    Log.d(TAG, "ok: " + ok);
-                }
-            });
+            read(data);
+            Log.d(TAG, "ok: " + ok);
         }
 
         @Override
@@ -126,7 +119,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             connect(touchPort);
         if (null != otherPort)
             connect(otherPort);
-//        resetIOManagerState();
+        resetIOManagerState();
     }
 
     @Override
@@ -139,7 +132,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             }
             touchPort = null;
         }
-//        stopIOManager();
+        stopIOManager();
     }
 
     private void initViews() {
@@ -174,13 +167,13 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
                     case R.id.front_camera:
-                        cameraView.setFront(true);
                         cameraView.setVisibility(View.GONE);
+                        cameraView.setFacing(1);
                         cameraView.setVisibility(View.VISIBLE);
                         break;
                     case R.id.back_camera:
-                        cameraView.setBack(true);
                         cameraView.setVisibility(View.GONE);
+                        cameraView.setFacing(0);
                         cameraView.setVisibility(View.VISIBLE);
                         break;
                     default:
@@ -336,19 +329,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         builder.show();
     }
 
-    private void setFullScreen() {
-        if (Build.VERSION.SDK_INT > 19) {
-            View decorView = getWindow().getDecorView();
-            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-            );
-        }
-    }
-
     private AlertDialog.Builder createAlertDialog(Context context, String title, String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title);
@@ -375,8 +355,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             try {
                 port.close();
             } catch (IOException e1) {
+                port = null;
             }
-            port = null;
         }
     }
 
@@ -437,7 +417,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private void start(String mode) {
         switch (mode) {
             case "TEST":
-                ToastUtils.showLong("test success");
+                ToastUtils.showShort("test success");
                 break;
             case "WIFI_TEST":
                 if (ocrResult.contains("Wi-Fi"))
@@ -467,18 +447,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private void resetIOManagerState() {
         stopIOManager();
         startIOManager();
-    }
-
-    public interface CameraModeListener {
-        void onCameraMode(int facing);
-    }
-
-    private void setCameraModeListener(CameraModeListener cmListener) {
-        this.cmListener = cmListener;
-    }
-
-    public void setModeListener(CameraModeListener cmListener) {
-        setCameraModeListener(cmListener);
     }
 
     private StateListDrawable getBackgroundSelector(int color) {

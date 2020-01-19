@@ -1,8 +1,10 @@
 package com.jacky.uitest.activity;
 
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
@@ -255,7 +257,25 @@ public class SerialPortActivity extends BaseActivity implements AdapterView.OnIt
                 otherStateChange();
                 break;
             case R.id.force_start:
-                startCameraActivity();
+                AlertDialog.Builder builder = new AlertDialog.Builder(SerialPortActivity.this);
+                builder.setTitle("警告");
+                builder.setMessage("确定要强行进入识别页吗？这将无法使用串口功能");
+                builder.setCancelable(false);
+                builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startCameraActivity();
+                        setFullScreen();
+                    }
+                });
+                builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        setFullScreen();
+                    }
+                });
+                builder.show();
+                break;
             default:
                 break;
         }
