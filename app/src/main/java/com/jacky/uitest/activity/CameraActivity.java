@@ -47,7 +47,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //global variable
     private String ocrResult, responseTimes, ocrTimes;
     private String selectedMode;
-    private String ok;
+    private String ok, testIt;
     private boolean isStop;
     //view initialize
     CameraView cameraView;
@@ -309,7 +309,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 break;
             case R.id.test:
                 writeToTouchPort(testByte);
-                Log.d("ok", "return ok? " + isOk(ok) + " return hex string: " + ok + new Date("YYYY-MM-DD hh-mm-ss"));
+                Log.d("ok", "return ok? " + isOk(ok) + " return hex string: " + ok + " " + testIt);
                 break;
 
         }
@@ -395,6 +395,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 
     private void read(byte[] data) {
         ok = ConvertUtils.bytes2HexString(data);
+        testIt = "" + new Date();
+
     }
 
     private boolean isOk(String ok) {
