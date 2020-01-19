@@ -404,8 +404,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     readBuffer.clear();
                     String strTmp = ConvertUtils.bytes2HexString(tmp);
                     int length = strTmp.length();
-                    Log.d("ok", "return data to hex string: " + strTmp.substring(length - 8, length - 1));
-                    return TextUtils.equals(ok, strTmp.substring(length - 8, length - 1));
+                    Log.d("ok", "return data to hex string: " + strTmp.substring(length - 8, length));
+                    return TextUtils.equals(ok, strTmp.substring(length - 8, length));
                 }
             } catch (IOException e) {
             }
