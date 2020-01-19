@@ -93,7 +93,12 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private final SerialInputOutputManager.Listener mListener = new SerialInputOutputManager.Listener() {
         @Override
         public void onNewData(final byte[] data) {
-            read(data);
+            CameraActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    CameraActivity.this.read(data);
+                }
+            });
             Log.d(TAG, "ok: " + ok.toString());
         }
 
@@ -395,8 +400,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 
     private void read(byte[] data) {
         ok = ConvertUtils.bytes2HexString(data);
-        testIt = "" + new Date();
-
     }
 
     private boolean isOk(String ok) {
