@@ -264,6 +264,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         param.setPreviewSize(imageWidth, imageHeight);
         param.setPictureSize(imageWidth, imageHeight);
         param.setAntibanding(Camera.Parameters.ANTIBANDING_60HZ);
+        param.setExposureCompensation(3);
 
         //preview frame default
         int frame = 30;
