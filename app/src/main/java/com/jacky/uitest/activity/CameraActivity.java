@@ -43,9 +43,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private static final String TAG = "CameraActivity";
     //global variable
     private String ocrResult, responseTimes, ocrTimes;
-    private String selectedMode;
+    private String selectedMode = null;
     private String ok = "6F6B0D0A";
-    private boolean isStop, isOk;
+    private boolean isStop = true, isOk;
     private static final int BUFFER_SIZE = 4096;
 
     private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
@@ -207,112 +207,113 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 
     @Override
     public boolean handleMessage(@NonNull Message msg) {
-        if (!isStop)
-            switch (msg.what) {
-                case MSG_MODE_WIFI:
-                    mode = 0;
+        switch (msg.what) {
+            case MSG_MODE_WIFI:
+                mode = 0;
+                if (!isStop) {
                     writeToTouchPort(goToSettings);
                     isOk = read();
                     handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI);
-                    break;
-                case MSG_MODE_WIFI_1:
-                    mode = 1;
-                    if (ocrResult.contains("Wi-Fi")) {
-                        writeToTouchPort(modeWifi_1);
+                }
+                break;
+            case MSG_MODE_WIFI_1:
+                mode = 1;
+                if (ocrResult.contains("Wi-Fi") && !isStop) {
+                    writeToTouchPort(modeWifi_1);
+                    isOk = read();
+                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
+                }
+                break;
+            case MSG_MODE_WIFI_2:
+                mode = 2;
+                if (ocrResult.contains("SSK") && !isStop) {
+                    writeToTouchPort(modeWifi_2);
+                    isOk = read();
+                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
+                }
+                break;
+            case MSG_MODE_WIFI_3:
+                mode = 3;
+                if (ocrResult.contains("CANCEL") && !isStop) {
+                    writeToTouchPort(modeWifi_3);
+                    isOk = read();
+                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
+                }
+                break;
+            case MSG_MODE_WIFI_4:
+                mode = 4;
+                if (ocrResult.contains("SSK") && !isStop) {
+                    writeToTouchPort(modeWifi_4);
+                    isOk = read();
+                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
+                }
+                break;
+            case MSG_MODE_PRESS_DOWN:
+                switch (mode) {
+                    case 0:
+                        changePressByte(goToSettings);
+                        writeToTouchPort(pressDown);
                         isOk = read();
-                        handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
-                    }
-                    break;
-                case MSG_MODE_WIFI_2:
-                    mode = 2;
-                    if (ocrResult.contains("SSK")) {
-                        writeToTouchPort(modeWifi_2);
+                        handlerMoveDelayed(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
+                        break;
+                    case 1:
+                        changePressByte(modeWifi_1);
+                        writeToTouchPort(pressDown);
                         isOk = read();
-                        handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
-                    }
-                    break;
-                case MSG_MODE_WIFI_3:
-                    mode = 3;
-                    if (ocrResult.contains("CANCEL")) {
-                        writeToTouchPort(modeWifi_3);
+                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
+                        break;
+                    case 2:
+                        changePressByte(modeWifi_2);
+                        writeToTouchPort(pressDown);
                         isOk = read();
-                        handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
-                    }
-                    break;
-                case MSG_MODE_WIFI_4:
-                    mode = 4;
-                    if (ocrResult.contains("SSK")) {
-                        writeToTouchPort(modeWifi_4);
+                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
+                        break;
+                    case 3:
+                        changePressByte(modeWifi_3);
+                        writeToTouchPort(pressDown);
                         isOk = read();
-                        handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
-                    }
-                    break;
-                case MSG_MODE_PRESS_DOWN:
-                    switch (mode) {
-                        case 0:
-                            changePressByte(goToSettings);
-                            writeToTouchPort(pressDown);
-                            isOk = read();
-                            handlerMoveDelayed(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
-                            break;
-                        case 1:
-                            changePressByte(modeWifi_1);
-                            writeToTouchPort(pressDown);
-                            isOk = read();
-                            handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
-                            break;
-                        case 2:
-                            changePressByte(modeWifi_2);
-                            writeToTouchPort(pressDown);
-                            isOk = read();
-                            handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
-                            break;
-                        case 3:
-                            changePressByte(modeWifi_3);
-                            writeToTouchPort(pressDown);
-                            isOk = read();
-                            handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
-                            break;
-                        case 4:
-                            changePressByte(modeWifi_4);
-                            writeToTouchPort(pressDown);
-                            isOk = read();
-                            handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
-                            break;
+                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
+                        break;
+                    case 4:
+                        changePressByte(modeWifi_4);
+                        writeToTouchPort(pressDown);
+                        isOk = read();
+                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
+                        break;
 
-                    }
-                    break;
-                case MSG_MODE_PRESS_UP:
-                    switch (mode) {
-                        case 0:
-                        case 4:
-                            writeToTouchPort(pressUp);
-                            isOk = read();
-                            handlerMove(MSG_MODE_WIFI_1, MSG_MODE_PRESS_UP);
-                            resetPressByte();
-                            break;
-                        case 1:
-                            writeToTouchPort(pressUp);
-                            isOk = read();
-                            handlerMove(MSG_MODE_WIFI_2, MSG_MODE_PRESS_UP);
-                            resetPressByte();
-                            break;
-                        case 2:
-                            writeToTouchPort(pressUp);
-                            isOk = read();
-                            handlerMove(MSG_MODE_WIFI_3, MSG_MODE_PRESS_UP);
-                            resetPressByte();
-                            break;
-                        case 3:
-                            writeToTouchPort(pressUp);
-                            isOk = read();
-                            handlerMove(MSG_MODE_WIFI_4, MSG_MODE_PRESS_UP);
-                            resetPressByte();
-                            break;
-                    }
-                default:
-                    break;
-            }
+                }
+                break;
+            case MSG_MODE_PRESS_UP:
+                switch (mode) {
+                    case 0:
+                    case 4:
+                        writeToTouchPort(pressUp);
+                        isOk = read();
+                        handlerMove(MSG_MODE_WIFI_1, MSG_MODE_PRESS_UP);
+                        resetPressByte();
+                        break;
+                    case 1:
+                        writeToTouchPort(pressUp);
+                        isOk = read();
+                        handlerMove(MSG_MODE_WIFI_2, MSG_MODE_PRESS_UP);
+                        resetPressByte();
+                        break;
+                    case 2:
+                        writeToTouchPort(pressUp);
+                        isOk = read();
+                        handlerMove(MSG_MODE_WIFI_3, MSG_MODE_PRESS_UP);
+                        resetPressByte();
+                        break;
+                    case 3:
+                        writeToTouchPort(pressUp);
+                        isOk = read();
+                        handlerMove(MSG_MODE_WIFI_4, MSG_MODE_PRESS_UP);
+                        resetPressByte();
+                        break;
+                }
+            default:
+                break;
+        }
         return false;
     }
 
@@ -509,12 +510,12 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         if (isOk)
             mHandler.sendEmptyMessage(next);
         else
-            mHandler.sendEmptyMessage(current);
+            mHandler.sendEmptyMessageDelayed(current, 2000);
     }
 
     private void handlerMoveDelayed(int next, int current) {
         if (isOk)
-            mHandler.sendEmptyMessageDelayed(next,3000);
+            mHandler.sendEmptyMessageDelayed(next, 3000);
         else mHandler.sendEmptyMessage(current);
     }
 
