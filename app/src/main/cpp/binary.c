@@ -35,7 +35,7 @@ JNIEXPORT void JNICALL Java_com_jacky_uitest_utils_OcrUtil_getBinaryBitmap
 			blue = color & 0x000000ff;
 			// 通过加权平均算法,计算出最佳像素值
 			color = red * 0.3 + green * 0.59 + blue * 0.11;
-			if (color <= 128) {
+			if (color <= 140) {
 				color = 0;
 			}
 			else
