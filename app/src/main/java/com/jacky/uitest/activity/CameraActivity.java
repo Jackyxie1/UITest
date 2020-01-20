@@ -222,6 +222,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     writeToTouchPort(modeWifi_1);
                     isOk = read();
                     handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_1, 2000);
                 }
                 break;
             case MSG_MODE_WIFI_2:
@@ -230,6 +232,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     writeToTouchPort(modeWifi_2);
                     isOk = read();
                     handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_2, 2000);
                 }
                 break;
             case MSG_MODE_WIFI_3:
@@ -238,6 +242,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     writeToTouchPort(modeWifi_3);
                     isOk = read();
                     handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_3, 2000);
                 }
                 break;
             case MSG_MODE_WIFI_4:
@@ -246,6 +252,8 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     writeToTouchPort(modeWifi_4);
                     isOk = read();
                     handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_4, 2000);
                 }
                 break;
             case MSG_MODE_PRESS_DOWN:
