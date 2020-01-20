@@ -42,7 +42,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     //TAG
     private static final String TAG = "CameraActivity";
     //global variable
-    private String ocrResult=" ", responseTimes, ocrTimes;
+    private String ocrResult = " ", responseTimes, ocrTimes;
     private String selectedMode = null;
     private String ok = "6F6B0D0A";
     private boolean isStop = true, isOk;
@@ -213,7 +213,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (!isStop) {
                     writeToTouchPort(goToSettings);
                     isOk = read();
-                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI);
+                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI);
                 }
                 break;
             case MSG_MODE_WIFI_1:
@@ -221,7 +221,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (ocrResult.contains("Wi-Fi") && !isStop) {
                     writeToTouchPort(modeWifi_1);
                     isOk = read();
-                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
+                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
                 }
                 break;
             case MSG_MODE_WIFI_2:
@@ -229,7 +229,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (ocrResult.contains("SSK") && !isStop) {
                     writeToTouchPort(modeWifi_2);
                     isOk = read();
-                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
+                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
                 }
                 break;
             case MSG_MODE_WIFI_3:
@@ -237,7 +237,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (ocrResult.contains("CANCEL") && !isStop) {
                     writeToTouchPort(modeWifi_3);
                     isOk = read();
-                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
+                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
                 }
                 break;
             case MSG_MODE_WIFI_4:
@@ -245,7 +245,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (ocrResult.contains("SSK") && !isStop) {
                     writeToTouchPort(modeWifi_4);
                     isOk = read();
-                    handlerMove(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
+                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
                 }
                 break;
             case MSG_MODE_PRESS_DOWN:
@@ -290,25 +290,25 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                         writeToTouchPort(pressUp);
                         isOk = read();
                         resetPressByte();
-                        handlerMove(MSG_MODE_WIFI_1, MSG_MODE_PRESS_UP);
+                        handlerMoveDelayed(MSG_MODE_WIFI_1, MSG_MODE_PRESS_UP);
                         break;
                     case 1:
                         writeToTouchPort(pressUp);
                         isOk = read();
                         resetPressByte();
-                        handlerMove(MSG_MODE_WIFI_2, MSG_MODE_PRESS_UP);
+                        handlerMoveDelayed(MSG_MODE_WIFI_2, MSG_MODE_PRESS_UP);
                         break;
                     case 2:
                         writeToTouchPort(pressUp);
                         isOk = read();
                         resetPressByte();
-                        handlerMove(MSG_MODE_WIFI_3, MSG_MODE_PRESS_UP);
+                        handlerMoveDelayed(MSG_MODE_WIFI_3, MSG_MODE_PRESS_UP);
                         break;
                     case 3:
                         writeToTouchPort(pressUp);
                         isOk = read();
                         resetPressByte();
-                        handlerMove(MSG_MODE_WIFI_4, MSG_MODE_PRESS_UP);
+                        handlerMoveDelayed(MSG_MODE_WIFI_4, MSG_MODE_PRESS_UP);
                         break;
                 }
             default:
@@ -506,17 +506,17 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
             }
     }
 
-    private void handlerMove(int next, int current) {
+    private void handlerMoveDelayed(int next, int current) {
         if (isOk)
-            mHandler.sendEmptyMessage(next);
+            mHandler.sendEmptyMessageDelayed(next, 3000);
         else
             mHandler.sendEmptyMessageDelayed(current, 2000);
     }
 
-    private void handlerMoveDelayed(int next, int current) {
+    private void handlerMove(int next, int current) {
         if (isOk)
-            mHandler.sendEmptyMessageDelayed(next, 3000);
-        else mHandler.sendEmptyMessage(current);
+            mHandler.sendEmptyMessage(next);
+        else mHandler.sendEmptyMessageDelayed(current, 2000);
     }
 
     private void start(String mode) {
