@@ -86,6 +86,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private static final int MSG_MODE_WIFI_4 = 1004;
     private static final int MSG_MODE_PRESS_DOWN = 998;
     private static final int MSG_MODE_PRESS_UP = 999;
+    private static final int MSG_MODE_RETURN_TO_ORIGIN = 997;
     private static final int MSG_MODE_CANCEL = -1;
 
     static {
@@ -292,33 +293,13 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 }
                 break;
             case MSG_MODE_PRESS_UP:
-                switch (mode) {
-                    case 0:
-                    case 4:
-                        writeToTouchPort(pressUp);
-                        isOk = read();
-                        resetPressByte();
-                        handlerMoveDelayed(MSG_MODE_WIFI_1, MSG_MODE_PRESS_UP);
-                        break;
-                    case 1:
-                        writeToTouchPort(pressUp);
-                        isOk = read();
-                        resetPressByte();
-                        handlerMoveDelayed(MSG_MODE_WIFI_2, MSG_MODE_PRESS_UP);
-                        break;
-                    case 2:
-                        writeToTouchPort(pressUp);
-                        isOk = read();
-                        resetPressByte();
-                        handlerMoveDelayed(MSG_MODE_WIFI_3, MSG_MODE_PRESS_UP);
-                        break;
-                    case 3:
-                        writeToTouchPort(pressUp);
-                        isOk = read();
-                        resetPressByte();
-                        handlerMoveDelayed(MSG_MODE_WIFI_4, MSG_MODE_PRESS_UP);
-                        break;
-                }
+                writeToTouchPort(pressUp);
+                isOk = read();
+                handlerMoveDelayed(MSG_MODE_RETURN_TO_ORIGIN, MSG_MODE_PRESS_UP);
+                break;
+            case MSG_MODE_RETURN_TO_ORIGIN:
+                returnToOrigin(mode);
+                break;
             default:
                 break;
         }
@@ -601,6 +582,36 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
         pressDown[10] = 0x30;
         pressDown[11] = 0x30;
         pressDown[12] = 0x30;
+    }
+
+    private void returnToOrigin(int mode) {
+        switch (mode) {
+            case 0:
+            case 4:
+                writeToTouchPort(returnDefaultOrigin);
+                isOk = read();
+                resetPressByte();
+                handlerMoveDelayed(MSG_MODE_WIFI_1, MSG_MODE_RETURN_TO_ORIGIN);
+                break;
+            case 1:
+                writeToTouchPort(returnDefaultOrigin);
+                isOk = read();
+                resetPressByte();
+                handlerMoveDelayed(MSG_MODE_WIFI_2, MSG_MODE_RETURN_TO_ORIGIN);
+                break;
+            case 2:
+                writeToTouchPort(returnDefaultOrigin);
+                isOk = read();
+                resetPressByte();
+                handlerMoveDelayed(MSG_MODE_WIFI_3, MSG_MODE_RETURN_TO_ORIGIN);
+                break;
+            case 3:
+                writeToTouchPort(returnDefaultOrigin);
+                isOk = read();
+                resetPressByte();
+                handlerMoveDelayed(MSG_MODE_WIFI_4, MSG_MODE_RETURN_TO_ORIGIN);
+                break;
+        }
     }
 
 }
