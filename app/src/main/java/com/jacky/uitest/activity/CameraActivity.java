@@ -307,7 +307,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                         if (read())
                             mHandler.sendEmptyMessage(MSG_MODE_PRESS_UP);
 //                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
-                        isStart = false;
                         break;
 
                 }
@@ -618,7 +617,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
     private void returnToOrigin(int mode) {
         switch (mode) {
             case 0:
-            case 4:
                 writeToTouchPort(returnDefaultOrigin);
 //                isOk = read();
                 resetPressByte();
@@ -649,6 +647,15 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (read())
                     mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_4, 3000);
 //                handlerMoveDelayed(MSG_MODE_WIFI_4, MSG_MODE_RETURN_TO_ORIGIN);
+                break;
+            case 4:
+                writeToTouchPort(returnDefaultOrigin);
+//                isOk = read();
+                resetPressByte();
+                if (read())
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_1, 3000);
+//                handlerMoveDelayed(MSG_MODE_WIFI_1, MSG_MODE_RETURN_TO_ORIGIN);
+                isStart = false;
                 break;
         }
     }
