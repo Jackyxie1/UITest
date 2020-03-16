@@ -227,10 +227,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     if (read())
 //                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_1, 2000);
                 }
-//                else {
-//                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_1, 2000);
-//                }
                 break;
             case MSG_MODE_WIFI_2:
                 if (ocrResult.contains("SSK") && !isStop) {
@@ -240,10 +239,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 //                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
                     if (read())
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_2, 2000);
                 }
-//                else {
-//                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_2, 2000);
-//                }
                 break;
             case MSG_MODE_WIFI_3:
                 if (ocrResult.contains("CANCEL") && !isStop) {
@@ -252,10 +250,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     if (read())
 //                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_3, 2000);
                 }
-//                else {
-//                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_3, 2000);
-//                }
                 break;
             case MSG_MODE_WIFI_4:
                 if (ocrResult.contains("SSK") && !isStop) {
@@ -265,10 +262,9 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
 //                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
                     if (read())
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
+                } else {
+                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_4, 2000);
                 }
-//                else {
-//                    mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_4, 2000);
-//                }
                 break;
             case MSG_MODE_PRESS_DOWN:
                 switch (mode) {
@@ -320,7 +316,7 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 writeToTouchPort(pressUp);
 //                isOk = read();
 //                handlerMoveDelayed(MSG_MODE_RETURN_TO_ORIGIN, MSG_MODE_PRESS_UP);
-                if(read())
+                if (read())
                     mHandler.sendEmptyMessageDelayed(MSG_MODE_RETURN_TO_ORIGIN, 3000);
                 break;
             case MSG_MODE_RETURN_TO_ORIGIN:
