@@ -10,7 +10,6 @@ import com.jacky.uitest.callback.RecognizeCallback;
 import com.jacky.uitest.view.MyImageView;
 
 import java.io.File;
-import java.util.Stack;
 
 public class OcrUtil {
     private static final String TAG = "OcrUtil";
@@ -147,41 +146,41 @@ public class OcrUtil {
         int iCount = 0;
 
         //to determine whether there is word existing
-        for (int i = 10; i < height; i = i + 10) {
-            for (int j = 0; j < width; j++) {
-                if (pixels[i * j] == PX_WHITE) {
-                    if (1 == space) textLength++;
-                    if (textWidth > 0 && startX > 0 && startX < width - 1 && (space > 100 || j == width - 1)) {
-                        if (textLength > 1)
-                            if (textWidth > right - left) {
-                                left = j - space - textWidth - (space / 2);
-                                if (left < 0)
-                                    left = 0;
-                                right = j - 1 - (space / 2);
-                                if (right > width)
-                                    right = width - 1;
-                                textStartX = startX;
-                            }
-                        textLength = 0;
-                        space = 0;
-                        startX = 0;
-                    }
-                    space++;
-                } else {
-                    if (startX == 0)
-                        startX = j;
-                    textWidth = j - startX;
-                    space = 0;
-                }
-            }
-            if (right - left < width * 0.1f)
-                break;
-            iCount = i + 10;
-        }
+//        for (int i = 10; i < height; i = i + 10) {
+//            for (int j = 0; j < width; j++) {
+//                if (pixels[i * j] == PX_WHITE) {
+//                    if (1 == space) textLength++;
+//                    if (textWidth > 0 && startX > 0 && startX < width - 1 && (space > 100 || j == width - 1)) {
+//                        if (textLength > 1)
+//                            if (textWidth > right - left) {
+//                                left = j - space - textWidth - (space / 2);
+//                                if (left < 0)
+//                                    left = 0;
+//                                right = j - 1 - (space / 2);
+//                                if (right > width)
+//                                    right = width - 1;
+//                                textStartX = startX;
+//                            }
+//                        textLength = 0;
+//                        space = 0;
+//                        startX = 0;
+//                    }
+//                    space++;
+//                } else {
+//                    if (startX == 0)
+//                        startX = j;
+//                    textWidth = j - startX;
+//                    space = 0;
+//                }
+//            }
+//            if (right - left < width * 0.1f)
+//                break;
+//            iCount = i + 10;
+//        }
+//
+//        if (iCount > height) return null;
 
-        if (iCount > height) return null;
-
-        Bitmap bitmapTmp=Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+        Bitmap bitmapTmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         if (null != imageView) {
             bitmapTmp.setPixels(pixels, 0, width, 0, 0, width, height);
             showImage(bitmapTmp, imageView);

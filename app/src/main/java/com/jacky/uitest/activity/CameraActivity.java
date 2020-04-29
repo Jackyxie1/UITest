@@ -216,7 +216,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     mode = 0;
                     writeToTouchPort(goToSettings);
                     if (read())
-//                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI);
                         mHandler.sendEmptyMessage(MSG_MODE_PRESS_DOWN);
                 }
                 break;
@@ -225,7 +224,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     mode = 1;
                     writeToTouchPort(modeWifi_1);
                     if (read())
-//                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_1);
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
                 } else {
                     mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_1, 2000);
@@ -235,8 +233,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (ocrResult.contains("SSK") && !isStop) {
                     mode = 2;
                     writeToTouchPort(modeWifi_2);
-//                    isOk = read();
-//                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_2);
                     if (read())
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
                 } else {
@@ -248,7 +244,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     mode = 3;
                     writeToTouchPort(modeWifi_3);
                     if (read())
-//                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_3);
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
                 } else {
                     mHandler.sendEmptyMessageDelayed(MSG_MODE_WIFI_3, 2000);
@@ -258,8 +253,6 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                 if (ocrResult.contains("SSK") && !isStop) {
                     mode = 4;
                     writeToTouchPort(modeWifi_4);
-//                    isOk = read();
-//                    handlerMoveDelayed(MSG_MODE_PRESS_DOWN, MSG_MODE_WIFI_4);
                     if (read())
                         mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_DOWN, 2000);
                 } else {
@@ -271,50 +264,38 @@ public class CameraActivity extends BaseActivity implements OcrCallback, Handler
                     case 0:
                         changePressByte(goToSettings);
                         writeToTouchPort(pressDown);
-//                        isOk = read();
-//                        handlerMoveDelayed(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
                         if (read())
                             mHandler.sendEmptyMessageDelayed(MSG_MODE_PRESS_UP, 4000);
                         break;
                     case 1:
                         changePressByte(modeWifi_1);
                         writeToTouchPort(pressDown);
-//                        isOk = read();
                         if (read())
                             mHandler.sendEmptyMessage(MSG_MODE_PRESS_UP);
-//                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
                         break;
                     case 2:
                         changePressByte(modeWifi_2);
                         writeToTouchPort(pressDown);
-//                        isOk = read();
                         if (read())
                             mHandler.sendEmptyMessage(MSG_MODE_PRESS_UP);
-//                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
                         break;
                     case 3:
                         changePressByte(modeWifi_3);
                         writeToTouchPort(pressDown);
-//                        isOk = read();
                         if (read())
                             mHandler.sendEmptyMessage(MSG_MODE_PRESS_UP);
-//                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
                         break;
                     case 4:
                         changePressByte(modeWifi_4);
                         writeToTouchPort(pressDown);
-//                        isOk = read();
                         if (read())
                             mHandler.sendEmptyMessage(MSG_MODE_PRESS_UP);
-//                        handlerMove(MSG_MODE_PRESS_UP, MSG_MODE_PRESS_DOWN);
                         break;
 
                 }
                 break;
             case MSG_MODE_PRESS_UP:
                 writeToTouchPort(pressUp);
-//                isOk = read();
-//                handlerMoveDelayed(MSG_MODE_RETURN_TO_ORIGIN, MSG_MODE_PRESS_UP);
                 if (read())
                     mHandler.sendEmptyMessageDelayed(MSG_MODE_RETURN_TO_ORIGIN, 3000);
                 break;

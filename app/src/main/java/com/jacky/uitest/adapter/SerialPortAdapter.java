@@ -69,7 +69,7 @@ public class SerialPortAdapter extends BaseAdapter {
                 final UsbDevice device = driver.getDevice();
                 if (null != device) {
                     StringBuilder builder = new StringBuilder();
-                    builder.append("串口 " + position + " ").append(device.getDeviceName()).append("\t").append(" ").append("的PID为：")
+                    builder.append("串口 ").append(position).append(" ").append(device.getDeviceName()).append("\t").append(" ").append("的PID为：")
                             .append(Integer.toHexString(device.getProductId())).append("\t").append("的VID为：")
                             .append(Integer.toHexString(device.getVendorId()));
                     viewHolder.serialPortItem.setText(builder.toString());

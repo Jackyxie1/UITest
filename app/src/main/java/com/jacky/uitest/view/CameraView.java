@@ -295,7 +295,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         }
     }
 
-    //camera auto focus
+    //定时任务，每两秒自动对焦一次
     Camera.AutoFocusCallback autoFocus = new Camera.AutoFocusCallback() {
         @Override
         public void onAutoFocus(boolean success, Camera camera) {

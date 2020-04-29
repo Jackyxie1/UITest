@@ -34,7 +34,7 @@ JNIEXPORT void JNICALL Java_com_jacky_uitest_utils_OcrUtil_getBinaryBitmap
 			green = (color & 0x0000ff00) >> 8;
 			blue = color & 0x000000ff;
 			// 通过加权平均算法,计算出最佳像素值
-			color = red * 0.3 + green * 0.59 + blue * 0.11;
+			color = (int) (red * 0.3 + green * 0.59 + blue * 0.11);
 			if (color <= 160) {
 				color = 0;
 			}
@@ -42,7 +42,7 @@ JNIEXPORT void JNICALL Java_com_jacky_uitest_utils_OcrUtil_getBinaryBitmap
 			{
 				color = 255;
 			}
-			sourceData[h * width + w] = alpha | (color << 16) | (color << 8) | color;
+			sourceData[h * width + w] = (uint32_t) (alpha | (color << 16) | (color << 8) | color);
 		}
 	}
 	AndroidBitmap_unlockPixels(env, jBitmap);
